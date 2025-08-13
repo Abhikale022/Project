@@ -1,0 +1,30 @@
+.timeline {
+    position: relative;
+}
+
+.timeline-item {
+    position: relative;
+}
+
+.timeline-icon-col {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 1rem;
+}
+
+.timeline-icon {
+    z-index: 1;
+    background: white;
+    border-radius: 50%;
+    padding: 2px;
+}
+
+.timeline-line {
+    flex-grow: 1;
+    width: 2px;
+    background-color: #dee2e6;
+    /* light gray like in screenshot */
+    margin-top: 2px;
+}

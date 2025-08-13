@@ -1,24 +1,27 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import HomePage from "./Pages/HomePage";
+import NextPage from "./components/NextPage";
+import CustomerDashboard from "./components/CustomerDashboard";
+import ApplicationStatus from "./components/ApplicationStatus";
+import Footer from "./components/Footer";
+
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+    <Router>
+      <Routes>
+        {/* Redirect root to HomePage */}
+        <Route path="/" element={<Navigate to="/home" />} />
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/after-login" element={<NextPage />} /> {/* after sales user login */}
+        <Route path="/customer-dashboard" element={<CustomerDashboard />} /> {/*after customer login */}
+        <Route path="/application-status" element={<ApplicationStatus />} /> {/* application status page */}
+      </Routes>
+    </Router>
+    <Footer />
+    </>
   );
 }
 
