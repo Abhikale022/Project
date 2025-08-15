@@ -1,0 +1,145 @@
+const Navbar = ({ brandName, navItems, onCustomerLoginClick , onSalesLoginClick  }) => {
+  const [hoveredItem, setHoveredItem] = useState(null);
+ 
+  return (
+    <nav className="navbar navbar-expand-lg sc-navbar">
+      <div className="container-fluid">
+        <a className="navbar-brand" href="#">
+          <img src={logo} alt="Logo" />
+          {brandName}
+        </a>
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarContent"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+        <div
+          className="collapse navbar-collapse justify-content-center"
+          id="navbarContent"
+        >
+          <ul className="navbar-nav mx-auto mb-2 mb-lg-0">
+            {navItems.map((item, index) => (
+              <li
+                key={index}
+                className="nav-item"
+                onMouseEnter={() => setHoveredItem(item)}
+                onMouseLeave={() => setHoveredItem(null)}
+                style={{ position: "relative" }}
+              >
+                <a className="nav-link" href="#">
+                  {item}
+                </a>
+                {hoveredItem === item && navItemContent[item]}
+              </li>
+            ))}
+          </ul>
+          {/* <Dropdown>
+            <Dropdown.Toggle
+              id="login-dropdown"
+              style={{
+                backgroundColor: "green",
+                color: "white",
+                border: "none",
+                padding: "8px 16px",
+                borderRadius: "5px",
+                fontSize: "16px",
+                cursor: "pointer",
+              }}
+            >
+              Login
+            </Dropdown.Toggle>
+ 
+            <Dropdown.Menu>
+              <Dropdown.Item as={Link} to = "/CustomerLoginModal" onClick={onCustomerLoginClick}>
+                Customer Login
+              </Dropdown.Item>
+              <Dropdown.Item as={Link} to ="/SalesLoginModal" onClick={onSalesLoginClick}>Sales Login</Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown> */}
+ 
+<div style={{ display: "flex", gap: "10px" }}>
+  <button
+    style={{
+      backgroundColor: "green",
+      color: "white",
+      border: "none",
+      padding: "8px 16px",
+      borderRadius: "5px",
+      fontSize: "16px",
+      cursor: "pointer",
+    }}
+   onClick={onCustomerLoginClick}
+  >
+    Login as Customer
+  </button>
+ 
+  <button
+    style={{
+      backgroundColor: "green",
+      color: "white",
+      border: "none",
+      padding: "8px 16px",
+      borderRadius: "5px",
+      fontSize: "16px",
+      cursor: "pointer",
+    }}
+    onClick={onSalesLoginClick}
+  >
+    Login as Sales
+  </button>
+</div>
+        </div>
+      </div>
+    </nav>
+  );
+};
+ 
+export default Navbar;
+ 
+import React, { useState } from "react";
+import "./Home.css";
+import Navbar from "./Navbar";
+import Carousel from "./Carousel";
+// import Footer from "./components/footer";
+import QuickActions from "./QuickActions";
+import CustomerLoginModal from "./CustomerLoginModal";
+import SalesLoginModal from "./SalesLoginModal";
+ 
+ 
+// Main App Component
+const HomePage = () => {
+  // Data for components
+  const navItems = ["About Us", "Invest", "Offers", "Help", "Services"];
+ 
+  // Event handlers
+  const [showCustomer, setShowCustomer] = useState(false);
+  const [showSales, setShowSales] = useState(false);
+  const handleLogin = () => {
+    alert("Login functionality would be implemented here");
+   
+  };
+ 
+  return (
+    <>
+      <Navbar navItems={navItems}  onCustomerLoginClick={() => setShowCustomer(true)} onSalesLoginClick={()=> setShowSales(true)}
+         />
+ 
+      <Carousel />
+ 
+      <QuickActions
+        title="Quick Actions"
+        subtitle="Everything you need to manage your credit cards and banking services in one place"
+      />
+ 
+     
+ 
+      {/* <Footer companyInfo="© 2025 Standard Chartered Bank. All rights reserved." /> */}
+    </>
+  );
+};
+ 
+export default HomePage;
+ 
