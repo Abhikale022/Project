@@ -1,138 +1,30 @@
-[8:27 pm, 15/08/2025] Abhishek Kale: HomePage.js
-jsx
-Copy
-Edit
-import React, { useState } from "react";
-import "./Home.css";
-import Navbar from "./Navbar";
-import Carousel from "./Carousel";
-import QuickActions from "./QuickActions";
-import CustomerLoginModal from "./CustomerLoginModal";
-import SalesLoginModal from "./SalesLoginModal";
+.timeline {
+    position: relative;
+}
 
-const HomePage = () => {
-  const navItems = ["About Us", "Invest", "Offers", "Help", "Services"];
+.timeline-item {
+    position: relative;
+}
 
-  const [showCustomer, setShowCustomer] = useState(false);
-  const [showSales, setShowSales] = useState(false);
+.timeline-icon-col {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 1rem;
+}
 
-  return (
-    <>
-      {/* Navbar with button click handlers */}
-      <Navbar
-        brandName="Standard Chartered"
-        navItems={navItems}
-        onCustomerLoginClick={() => setShowCustomer(true)}
-        onSalesLoginClick={() => setShowSales(true)}
-      />
+.timeline-icon {
+    z-index: 1;
+    background: white;
+    border-radius: 50%;
+    padding: 2px;
+}
 
-      {/* Main Content */}
-      <Carousel />
-      <QuickActions
-        title="Quick Actions"
-        subtitle="Everything you need to manage your credit cards and banking services in one place"
-      />
-
-      {/* Customer Modal */}
-      <CustomerLoginModal
-        show={showCustomer}
-        onHide={() => setShowCustomer(false)}
-      />
-
-      {/* Sales Modal */}
-      <SalesLoginModal
-        show={showSales}
-        onHide={() => setShowSales(false)}
-      />
-    </>
-  );
-};
-
-export default HomePage;
-[8:27 pm, 15/08/2025] Abhishek Kale: Navbar.js
-jsx
-Copy
-Edit
-import React, { useState } from "react";
-import logo from "../assets/logo.png"; // make sure path is correct
-
-const Navbar = ({ brandName, navItems, onCustomerLoginClick, onSalesLoginClick }) => {
-  const [hoveredItem, setHoveredItem] = useState(null);
-
-  return (
-    <nav className="navbar navbar-expand-lg sc-navbar">
-      <div className="container-fluid">
-        {/* Brand Logo */}
-        <a className="navbar-brand" href="#">
-          <img src={logo} alt="Logo" style={{ height: "40px", marginRight: "8px" }} />
-          {brandName}
-        </a>
-
-        {/* Mobile Toggle Button */}
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarContent"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-
-        {/* Navbar Items */}
-        <div className="collapse navbar-collapse justify-content-center" id="navbarContent">
-          <ul className="navbar-nav mx-auto mb-2 mb-lg-0">
-            {navItems.map((item, index) => (
-              <li
-                key={index}
-                className="nav-item"
-                onMouseEnter={() => setHoveredItem(item)}
-                onMouseLeave={() => setHoveredItem(null)}
-                style={{ position: "relative" }}
-              >
-                <a className="nav-link" href="#">
-                  {item}
-                </a>
-                {hoveredItem === item && <div>{/* Dropdown/hover content if needed */}</div>}
-              </li>
-            ))}
-          </ul>
-
-          {/* Login Buttons */}
-          <div style={{ display: "flex", gap: "10px" }}>
-            <button
-              style={{
-                backgroundColor: "green",
-                color: "white",
-                border: "none",
-                padding: "8px 16px",
-                borderRadius: "5px",
-                fontSize: "16px",
-                cursor: "pointer",
-              }}
-              onClick={onCustomerLoginClick}
-            >
-              Login as Customer
-            </button>
-
-            <button
-              style={{
-                backgroundColor: "green",
-                color: "white",
-                border: "none",
-                padding: "8px 16px",
-                borderRadius: "5px",
-                fontSize: "16px",
-                cursor: "pointer",
-              }}
-              onClick={onSalesLoginClick}
-            >
-              Login as Sales
-            </button>
-          </div>
-        </div>
-      </div>
-    </nav>
-  );
-};
-
-export default Navbar;
+.timeline-line {
+    flex-grow: 1;
+    width: 2px;
+    background-color: #dee2e6;
+    /* light gray like in screenshot */
+    margin-top: 2px;
+}
