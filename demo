@@ -1,97 +1,76 @@
+// Quick Actions Component
 import React from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import platinumcard from "../assets/platinum.png";
-import silvercard from "../assets/silver.png";
-import goldcard from "../assets/gold.png"
-
-function CreditCardComparison() {
-  const cards = [
+import { useNavigate } from "react-router-dom";
+const quickActions = [
     {
-      name: "Silver Card",
-      fee: "₹500 Annual Fee",
-      image: silvercard,
-      color: "#e0e0e0",
-      features: [
-        "1 point per ₹200 spent",
-        "No airport lounge access",
-        "Fuel surcharge waiver up to ₹100 / month",
-        "0.5% cashback on groceries",
-        "Accidental Insurance ₹1 Lakh",
-        "Welcome Gift worth ₹250"
-      ],
-      button: "success"
+      icon: "fa-solid fa-clipboard-list",
+      title: "Apply Now",
+      description: "Quick and easy credit card application process",
+      buttonText: "Start Application",
+      iconClass: "quick-clipboard",
     },
     {
-      name: "Gold Card",
-      fee: "₹1,000 Annual Fee",
-      image: goldcard,
-      color: "#FFD700",
-      features: [
-        "2 points per ₹150 spent",
-        "2 free airport lounge visits / year",
-        "Fuel surcharge waiver up to ₹250 / month",
-        "1% cashback on groceries & dining",
-        "Travel Insurance ₹5 Lakhs",
-        "Welcome Gift worth ₹1,000"
-      ],
-      button: "success"
+      icon: "fa-solid fa-question",
+      title: "How to Apply",
+      description: "Step-by-step guide to credit card applications",
+      buttonText: "View Guide",
+      iconClass: "quick-question",
     },
     {
-      name: "Platinum Card",
-      fee: "₹2,500 Annual Fee",
-      image: platinumcard,
-      color: "#C0C0C0",
-      features: [
-        "3 points per ₹100 spent",
-        "6 free airport lounge visits / year",
-        "Unlimited fuel surcharge waiver",
-        "2% cashback on groceries, dining & travel",
-        "Comprehensive Insurance ₹20 Lakhs",
-        "Welcome Gift worth ₹3,000"
-      ],
-      button: "success"
-    }
+      icon: "fa-solid fa-credit-card",
+      title: "Types of Credit Cards",
+      description: "Explore our complete range of credit cards",
+      buttonText: "Compare Cards",
+      iconClass: "quick-card",
+    },
   ];
-
-  return (
-    <div className="container mt-5">
-      <h2 className="text-center mb-4" style={{ color: "#006747" }}>
-        Compare Our Credit Cards
-      </h2>
-
-      <div className="row">
-        {cards.map((card, index) => (
-          <div key={index} className="col-md-4 mb-4">
-            <div
-              className="card shadow-lg border-0 h-100"
-              style={{ borderRadius: "15px" }}
-            >
-              <div className="card-body text-center">
-                <img
-                  src={card.image}
-                  alt={card.name}
-                  className="mb-3"
-                  style={{ width: "180px", height: "auto" }}
-                />
-                <h4 style={{ color: "#004E8C" }}>{card.name}</h4>
-                <p className="text-muted">{card.fee}</p>
-                <ul className="list-unstyled text-start mt-3">
-                  {card.features.map((feature, i) => (
-                    <li key={i} className="mb-2">
-                      ✅ {feature}
-                    </li>
-                  ))}
-                </ul>
-                <button className={`btn btn-${card.button} mt-3`}>
-                  Apply Now
-                </button>
-              </div>
+ 
+  const QuickActions = ({ title, subtitle }) => {
+    return (
+      <div className="container mt-5 mb-5">
+        <h3 className="mb-4 fw-semibold">{title}</h3>
+        <p className="mb-4 text-muted" style={{ marginTop: "-14px" }}>
+          {subtitle}
+        </p>
+ 
+        <div className="row g-1 quick-actions">
+          {quickActions.map((action, index) => (
+            <div key={index} className="col-8 col-sm-8 col-md-3">
+              <QuickActionCard
+                icon={action.icon}
+                title={action.title}
+                description={action.description}
+                buttonText={action.buttonText}
+                iconClass={action.iconClass}
+              />
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
-  );
-}
-
-export default CreditCardComparison;
+    );
+  };
+ 
+  export default QuickActions;
+ 
+  const QuickActionCard = ({
+    icon,
+    title,
+    description,
+    buttonText,
+    iconClass,
+  }) => {
+   
+    return (
+      <div className="card h-100 p-3 text-center temp-class">
+        <div className={`quick-icon-bg ${iconClass}`}>
+          <i className={icon}></i>
+        </div>
+        <h5 className="card-title">{title}</h5>
+        <p className="card-text">{description}</p>
+        <a href="#" className="btn btn-outline-primary btn-sm">
+          {buttonText}
+        </a>
+      </div>
+    );
+  };
+ 
