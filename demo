@@ -1,8 +1,8 @@
 import React from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
 import platinumcard from "../assets/platinum.png";
 import silvercard from "../assets/silver.png";
 import goldcard from "../assets/gold.png";
+import "./CreditCardComparison.css"; // <-- import css
 
 function CreditCardComparison() {
   const cards = [
@@ -10,7 +10,6 @@ function CreditCardComparison() {
       name: "Silver Card",
       fee: "₹500 Annual Fee",
       image: silvercard,
-      color: "#e0e0e0",
       features: [
         "1 point per ₹200 spent",
         "No airport lounge access",
@@ -19,13 +18,11 @@ function CreditCardComparison() {
         "Accidental Insurance ₹1 Lakh",
         "Welcome Gift worth ₹250",
       ],
-      button: "success",
     },
     {
       name: "Gold Card",
       fee: "₹1,000 Annual Fee",
       image: goldcard,
-      color: "#FFD700",
       features: [
         "2 points per ₹150 spent",
         "2 free airport lounge visits / year",
@@ -34,13 +31,11 @@ function CreditCardComparison() {
         "Travel Insurance ₹5 Lakhs",
         "Welcome Gift worth ₹1,000",
       ],
-      button: "success",
     },
     {
       name: "Platinum Card",
       fee: "₹2,500 Annual Fee",
       image: platinumcard,
-      color: "#C0C0C0",
       features: [
         "3 points per ₹100 spent",
         "6 free airport lounge visits / year",
@@ -49,44 +44,24 @@ function CreditCardComparison() {
         "Comprehensive Insurance ₹20 Lakhs",
         "Welcome Gift worth ₹3,000",
       ],
-      button: "success",
     },
   ];
 
   return (
-    <div className="container mt-5">
-      <h2 className="text-center mb-4" style={{ color: "#006747" }}>
-        Compare Our Credit Cards
-      </h2>
-
-      {/* Flexbox row with no wrap */}
-      <div className="d-flex justify-content-center flex-nowrap">
+    <div className="comparison-container">
+      <h2 className="title">Compare Our Credit Cards</h2>
+      <div className="cards-row">
         {cards.map((card, index) => (
-          <div
-            key={index}
-            className="card shadow-lg border-0 mx-3"
-            style={{ borderRadius: "15px", width: "300px" }}
-          >
-            <div className="card-body text-center">
-              <img
-                src={card.image}
-                alt={card.name}
-                className="mb-3"
-                style={{ width: "180px", height: "auto" }}
-              />
-              <h4 style={{ color: "#004E8C" }}>{card.name}</h4>
-              <p className="text-muted">{card.fee}</p>
-              <ul className="list-unstyled text-start mt-3">
-                {card.features.map((feature, i) => (
-                  <li key={i} className="mb-2">
-                    ✅ {feature}
-                  </li>
-                ))}
-              </ul>
-              <button className={`btn btn-${card.button} mt-3`}>
-                Apply Now
-              </button>
-            </div>
+          <div key={index} className="card">
+            <img src={card.image} alt={card.name} className="card-image" />
+            <h3>{card.name}</h3>
+            <p className="fee">{card.fee}</p>
+            <ul>
+              {card.features.map((feature, i) => (
+                <li key={i}>✅ {feature}</li>
+              ))}
+            </ul>
+            <button className="apply-btn">Apply Now</button>
           </div>
         ))}
       </div>
@@ -95,3 +70,54 @@ function CreditCardComparison() {
 }
 
 export default CreditCardComparison;
+
+
+
+.comparison-container {
+  text-align: center;
+  margin: 40px;
+}
+
+.title {
+  margin-bottom: 30px;
+  color: #006747;
+}
+
+.cards-row {
+  display: flex;
+  justify-content: center;
+  gap: 20px;      /* space between cards */
+  flex-wrap: nowrap; /* prevents going to 2nd row */
+  overflow-x: auto; /* allows scroll if screen is too small */
+}
+
+.card {
+  background: #fff;
+  border-radius: 15px;
+  padding: 20px;
+  width: 280px;   /* fixed width so they stay aligned */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0; /* prevents card from shrinking */
+  text-align: center;
+}
+
+.card-image {
+  width: 180px;
+  height: auto;
+  margin-bottom: 15px;
+}
+
+.fee {
+  color: gray;
+  margin: 10px 0;
+}
+
+.apply-btn {
+  background-color: green;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 15px;
+}
