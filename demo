@@ -1,123 +1,206 @@
 import React from "react";
-import platinumcard from "../assets/platinum.png";
-import silvercard from "../assets/silver.png";
-import goldcard from "../assets/gold.png";
-import "./CreditCardComparison.css"; // <-- import css
-
-function CreditCardComparison() {
-  const cards = [
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  ProgressBar,
+  Badge
+} from "react-bootstrap";
+import {
+  CheckCircleFill,
+  Circle
+} from "react-bootstrap-icons";
+import "./ApplicationStatus.css";
+import logo from "../assets/sclogo.png";
+ 
+export default function ApplicationStatus() {
+  const timelineItems = [
     {
-      name: "Silver Card",
-      fee: "₹500 Annual Fee",
-      image: silvercard,
-      features: [
-        "1 point per ₹200 spent",
-        "No airport lounge access",
-        "Fuel surcharge waiver up to ₹100 / month",
-        "0.5% cashback on groceries",
-        "Accidental Insurance ₹1 Lakh",
-        "Welcome Gift worth ₹250",
-      ],
+      title: "Application Submitted",
+      subtitle: "Your credit card application has been successfully received",
+      date: "Dec 15, 2024",
+      status: "done",
+      note: "Instant",
     },
     {
-      name: "Gold Card",
-      fee: "₹1,000 Annual Fee",
-      image: goldcard,
-      features: [
-        "2 points per ₹150 spent",
-        "2 free airport lounge visits / year",
-        "Fuel surcharge waiver up to ₹250 / month",
-        "1% cashback on groceries & dining",
-        "Travel Insurance ₹5 Lakhs",
-        "Welcome Gift worth ₹1,000",
-      ],
+      title: "Application Processing",
+      subtitle: "We are reviewing your application and verifying your information",
+      date: "Dec 16, 2024",
+      status: "done",
+      note: "1-2 business days",
     },
     {
-      name: "Platinum Card",
-      fee: "₹2,500 Annual Fee",
-      image: platinumcard,
-      features: [
-        "3 points per ₹100 spent",
-        "6 free airport lounge visits / year",
-        "Unlimited fuel surcharge waiver",
-        "2% cashback on groceries, dining & travel",
-        "Comprehensive Insurance ₹20 Lakhs",
-        "Welcome Gift worth ₹3,000",
-      ],
+      title: "Credit Card Offered",
+      subtitle: "Congratulations! Your application has been approved",
+      date: "Dec 18, 2024",
+      status: "done",
+      note: "2-3 business days",
+    },
+    {
+      title: "                                Application Accepted",
+      subtitle: "Accept your offer to receive your new credit card",
+      date: "",
+      status: "inprogress",
+      note: "Action Required",
+    },
+    {
+      title: "Printed",
+      subtitle: "Card is being printed",
+      date: "",
+      status: "upcoming",
+    },
+    {
+      title: "Shipped",
+      subtitle: "Card has been dispatched for delivery",
+      date: "",
+      status: "upcoming",
     },
   ];
-
+ 
+  const completedCount = timelineItems.filter(t => t.status === "done").length;
+  const inProgressIndex = timelineItems.findIndex(t => t.status === "inprogress");
+  const totalSteps = timelineItems.length;
+  const progressPercent = Math.round(
+    ((completedCount + (inProgressIndex >= 0 ? 0.5 : 0)) / totalSteps) * 100
+  );
+ 
   return (
-    <div className="comparison-container">
-      <h2 className="title">Compare Our Credit Cards</h2>
-      <div className="cards-row">
-        {cards.map((card, index) => (
-          <div key={index} className="card">
-            <img src={card.image} alt={card.name} className="card-image" />
-            <h3>{card.name}</h3>
-            <p className="fee">{card.fee}</p>
-            <ul>
-              {card.features.map((feature, i) => (
-                <li key={i}>✅ {feature}</li>
-              ))}
-            </ul>
-            <button className="apply-btn">Apply Now</button>
-          </div>
-        ))}
+    <Container fluid className ="p-4">
+      {/* Header */}
+      <div className="text-center mb-4">
+      <div className="text-center">
+  <img
+    src={logo}
+    alt="Standard Chartered"
+    style={{
+      width: "200px",
+      margin: "10px 0",
+    }}
+  />
+</div>
+        <h4 className="mt-3">Credit Card Application Status</h4>
+        <p className="text-muted">
+          Track your application progress. We'll keep you updated at every step.
+        </p>
       </div>
-    </div>
+ 
+      {/* Progress Card */}
+      <Card className="mb-3 w-100">
+        <Card.Body>
+          <Row className="align-items-center">
+            <Col md={12}>
+              <h6 className="mb-1">Overall Progress</h6>
+              <small className="text-muted">
+                Step {completedCount + (inProgressIndex >= 0 ? 1 : 0)} of{" "}
+                {totalSteps} completed
+              </small>
+            </Col>
+            <Col xs="auto">
+              <span className="text-primary fw-bold">In Progress</span>
+            </Col>
+          </Row>
+          <ProgressBar
+            now={progressPercent}
+            variant="primary"
+            className="mt-3"
+            style={{ height: "8px", borderRadius: "4px" }}
+          />
+        </Card.Body>
+      </Card>
+ 
+      {/* Timeline */}
+      <Card className="mb-3 w-100">
+        <Card.Body>
+          <h6 className="mb-3">Application Timeline</h6>
+          <div className="timeline">
+            {timelineItems.map((item, idx) => (
+              <div className="timeline-item d-flex" key={idx}>
+                {/* Icon + line */}
+                <div className="timeline-icon-col">
+                  <div className="timeline-icon">
+                    {item.status === "done" ? (
+                      <CheckCircleFill size={24} color="#3BB54A" />
+                    ) : item.status === "inprogress" ? (
+                      <Circle size={24} color="#1f6fe0" />
+                    ) : (
+                      <Circle size={20} color="#cbd5e1" />
+                    )}
+                  </div>
+                  {idx !== timelineItems.length - 1 && (
+                    <div className="timeline-line"></div>
+                  )}
+                </div>
+ 
+                {/* Content */}
+                <div className="flex-grow-1 pb-3">
+                  <div className="d-flex justify-content-between align-items-start w-100">
+                    <div>
+                      <div
+                        className={`fw-bold ${item.status === "inprogress" ? "text-primary" : ""}`}
+ 
+                      >
+                        {item.title}
+                      </div>
+                      <div className="text-muted small">{item.subtitle}</div>
+                      {item.note && (
+                        <Badge
+                          bg={
+                            item.status === "inprogress"
+                              ? "warning"
+                              : "light"
+                          }
+                          text="dark"
+                          className="mt-1"
+                        >
+                          {item.note}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-muted small">{item.date}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card.Body>
+      </Card>
+ 
+     
+    </Container>
   );
 }
-
-export default CreditCardComparison;
-
-
-
-.comparison-container {
-  text-align: center;
-  margin: 40px;
+ 
+ 
+.timeline {
+    position: relative;
 }
-
-.title {
-  margin-bottom: 30px;
-  color: #006747;
+ 
+.timeline-item {
+    position: relative;
 }
-
-.cards-row {
-  display: flex;
-  justify-content: center;
-  gap: 20px;      /* space between cards */
-  flex-wrap: nowrap; /* prevents going to 2nd row */
-  overflow-x: auto; /* allows scroll if screen is too small */
+ 
+.timeline-icon-col {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 1rem;
 }
-
-.card {
-  background: #fff;
-  border-radius: 15px;
-  padding: 20px;
-  width: 280px;   /* fixed width so they stay aligned */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  flex-shrink: 0; /* prevents card from shrinking */
-  text-align: center;
+ 
+.timeline-icon {
+    z-index: 1;
+    background: white;
+    border-radius: 50%;
+    padding: 2px;
 }
-
-.card-image {
-  width: 180px;
-  height: auto;
-  margin-bottom: 15px;
+ 
+.timeline-line {
+    flex-grow: 1;
+    width: 2px;
+    background-color: #dee2e6;
+    /* light gray like in screenshot */
+    margin-top: 2px;
 }
-
-.fee {
-  color: gray;
-  margin: 10px 0;
-}
-
-.apply-btn {
-  background-color: green;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-top: 15px;
-}
+ 
+ 
