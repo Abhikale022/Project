@@ -1,85 +1,109 @@
-/* Container */
-.timeline-container {
-  max-width: 700px;
-  margin: 40px auto;
-  padding: 20px;
-}
+import React from "react";
+import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
+import "./ApplicationStatus.css";
 
-.timeline-title {
-  font-weight: bold;
-  text-align: right;
-  margin-bottom: 20px;
-}
+const ApplicationStatus = () => {
+  const steps = [
+    {
+      title: "Application Submitted",
+      description: "Your credit card application has been successfully received",
+      date: "Dec 15, 2024",
+      completed: true,
+    },
+    {
+      title: "Application Processing",
+      description: "We are reviewing your application and verifying your information",
+      date: "Dec 16, 2024",
+      completed: true,
+    },
+    {
+      title: "Credit Card Offered",
+      description: "Congratulations! Your application has been approved",
+      date: "Dec 18, 2024",
+      completed: true,
+    },
+    {
+      title: "Application Accepted",
+      description: "Accept your offer to receive your new credit card",
+      date: "Waiting for your action",
+      completed: false,
+      highlight: true,
+    },
+  ];
 
-/* Timeline Steps */
-.timeline-step {
-  display: flex;
-  align-items: flex-start;
-  position: relative;
-  margin-bottom: 30px;
-}
+  const completedSteps = steps.filter((s) => s.completed).length;
+  const totalSteps = steps.length;
 
-/* Left Icon */
-.timeline-icon {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-right: 15px;
-  position: relative;
-}
+  return (
+    <div className="status-container">
+      <h3 className="status-header">Credit Card Application Status</h3>
+      <p className="status-subtitle">
+        Track your application progress. We'll keep you updated at every step.
+      </p>
 
-.icon {
-  font-size: 22px;
-}
+      {/* Progress Bar */}
+      <div className="progress-box">
+        <div className="progress-header">
+          <span>Overall Progress</span>
+          <span className="progress-label">In Progress</span>
+        </div>
+        <div className="progress-bar">
+          <div
+            className="progress-fill"
+            style={{ width: `${(completedSteps / totalSteps) * 100}%` }}
+          ></div>
+        </div>
+        <p className="progress-info">
+          Step {completedSteps} of {totalSteps} completed
+        </p>
+      </div>
 
-.icon.completed {
-  color: green;
-}
+      {/* Timeline */}
+      <h4 className="timeline-title">Application Timeline</h4>
+      <div className="timeline">
+        {steps.map((step, index) => (
+          <div className="timeline-step" key={index}>
+            <div className="timeline-icon">
+              {step.completed ? (
+                <FaCheckCircle className="icon completed" />
+              ) : (
+                <FaRegCircle className="icon pending" />
+              )}
+              {index !== steps.length - 1 && <div className="timeline-line"></div>}
+            </div>
+            <div className="timeline-content">
+              <div className="timeline-top">
+                <div
+                  className={`timeline-title-text ${
+                    step.highlight ? "highlight" : ""
+                  }`}
+                >
+                  {step.title}
+                  {step.highlight && (
+                    <span className="badge-action">Action Required</span>
+                  )}
+                </div>
+                <div className="timeline-date">{step.date}</div>
+              </div>
+              <div className="timeline-desc">{step.description}</div>
+            </div>
+          </div>
+        ))}
+      </div>
 
-.icon.pending {
-  color: #bbb;
-}
+      {/* Final Action Box */}
+      <div className="final-box">
+        <p className="final-text">
+          Your credit card application has been approved. Accept your offer to
+          proceed with card delivery.
+        </p>
+        <div className="final-buttons">
+          <button className="btn-primary">Accept Credit Card Offer</button>
+          <button className="btn-secondary">Review Terms & Conditions</button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-/* Vertical line */
-.timeline-line {
-  flex-grow: 1;
-  width: 2px;
-  background-color: #ccc;
-  margin-top: 4px;
-}
-
-/* Right Content */
-.timeline-content {
-  flex: 1;
-}
-
-.timeline-title-text {
-  font-weight: bold;
-  color: black;
-}
-
-.timeline-title-text.highlight {
-  color: #0056b3;
-}
-
-.timeline-desc {
-  color: #666;
-  margin-top: 2px;
-}
-
-.timeline-duration {
-  font-size: 0.85rem;
-  color: #888;
-  margin-top: 2px;
-}
-
-/* Badge for Action Required */
-.badge-action {
-  background: #ffc107;
-  color: black;
-  font-size: 0.75rem;
-  font-weight: bold;
-  padding: 2px 8px;
-  border-radius: 5px;
-  margin-left: 8px;
-}
+export default ApplicationStatus;
