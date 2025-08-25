@@ -1,33 +1,202 @@
-.timeline {
-  position: relative;
-}
+import React from "react";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  ProgressBar,
+  Badge,
+  Button,
+} from "react-bootstrap";
+import { CheckCircleFill, Circle } from "react-bootstrap-icons";
+import "./ApplicationStatus.css";
+import logo from "../assets/sclogo.png";
 
-.timeline-item {
-  position: relative;
-}
+export default function ApplicationStatus() {
+  const timelineItems = [
+    {
+      title: "Application Submitted",
+      subtitle: "Your credit card application has been successfully received",
+      date: "Dec 15, 2024",
+      status: "done",
+      note: "Instant",
+    },
+    {
+      title: "Application Processing",
+      subtitle:
+        "We are reviewing your application and verifying your information",
+      date: "Dec 16, 2024",
+      status: "done",
+      note: "1-2 business days",
+    },
+    {
+      title: "Credit Card Offered",
+      subtitle: "Congratulations! Your application has been approved",
+      date: "Dec 18, 2024",
+      status: "done",
+      note: "2-3 business days",
+    },
+    {
+      title: "Application Accepted",
+      subtitle: "Accept your offer to receive your new credit card",
+      date: "",
+      status: "inprogress",
+      note: "Action Required",
+    },
+    {
+      title: "Printed",
+      subtitle: "Card is being printed",
+      date: "",
+      status: "upcoming",
+    },
+    {
+      title: "Shipped",
+      subtitle: "Card has been dispatched for delivery",
+      date: "",
+      status: "upcoming",
+    },
+  ];
 
-.timeline-icon-col {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-right: 1rem;
-}
+  const completedCount = timelineItems.filter((t) => t.status === "done").length;
+  const inProgressIndex = timelineItems.findIndex(
+    (t) => t.status === "inprogress"
+  );
+  const totalSteps = timelineItems.length;
+  const progressPercent = Math.round(
+    ((completedCount + (inProgressIndex >= 0 ? 0.5 : 0)) / totalSteps) * 100
+  );
 
-.timeline-icon {
-  z-index: 1;
-  background: white;
-  border-radius: 50%;
-  padding: 2px;
-}
+  return (
+    <Container fluid className="p-4">
+      {/* Header */}
+      <div className="text-center mb-4">
+        <img
+          src={logo}
+          alt="Standard Chartered"
+          style={{
+            width: "200px",
+            margin: "10px 0",
+          }}
+        />
+        <h4 className="mt-3">Credit Card Application Status</h4>
+        <p className="text-muted">
+          Track your application progress. We'll keep you updated at every step.
+        </p>
+      </div>
 
-.timeline-line {
-  flex-grow: 1;
-  width: 2px;
-  background-color: #dee2e6;
-  margin-top: 2px;
-}
+      {/* Progress Card */}
+      <Card className="mb-3 w-100">
+        <Card.Body>
+          <Row className="align-items-center">
+            <Col>
+              <h6 className="mb-1">Overall Progress</h6>
+              <small className="text-muted">
+                Step {completedCount + (inProgressIndex >= 0 ? 1 : 0)} of{" "}
+                {totalSteps} completed
+              </small>
+            </Col>
+            <Col xs="auto">
+              <span className="text-primary fw-bold">In Progress</span>
+            </Col>
+          </Row>
+          <ProgressBar
+            now={progressPercent}
+            variant="primary"
+            className="mt-3"
+            style={{ height: "8px", borderRadius: "4px" }}
+          />
+        </Card.Body>
+      </Card>
 
-.text-success {
-  color: #28a745 !important;
+      {/* Timeline */}
+      <Card className="mb-3 w-100">
+        <Card.Body>
+          <h6 className="mb-3">Application Timeline</h6>
+          <div className="timeline">
+            {timelineItems.map((item, idx) => (
+              <div className="timeline-item" key={idx}>
+                {/* Icon + line */}
+                <div className="timeline-icon-col">
+                  <div className="timeline-icon">
+                    {item.status === "done" ? (
+                      <CheckCircleFill size={24} color="#3BB54A" />
+                    ) : item.status === "inprogress" ? (
+                      <Circle size={24} color="#1f6fe0" />
+                    ) : (
+                      <Circle size={20} color="#cbd5e1" />
+                    )}
+                  </div>
+                  {idx !== timelineItems.length - 1 && (
+                    <div className="timeline-line"></div>
+                  )}
+                </div>
+
+                {/* Content */}
+                <div className="flex-grow-1">
+                  <div className="d-flex justify-content-between align-items-start">
+                    <div>
+                      <div
+                        className={`fw-bold ${
+                          item.status === "inprogress" ? "text-primary" : ""
+                        }`}
+                      >
+                        {item.title}{" "}
+                        {item.note && item.status === "inprogress" && (
+                          <Badge bg="warning" text="dark" className="ms-2">
+                            {item.note}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-muted small">{item.subtitle}</div>
+                      {item.note &&
+                        item.status !== "inprogress" && ( // for Instant, business days
+                          <Badge bg="light" text="dark" className="mt-1">
+                            {item.note}
+                          </Badge>
+                        )}
+                    </div>
+                    <div className="text-muted small">{item.date}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card.Body>
+      </Card>
+
+      {/* Final Step Card */}
+      <Card className="mb-3 w-100 border-success">
+        <Card.Body>
+          <h6 className="text-success fw-bold">✅ Ready for Final Step!</h6>
+          <p className="mb-2">
+            Your credit card application has been approved. Accept your offer to
+            proceed with card delivery.
+          </p>
+          <div className="d-flex gap-2">
+            <Button variant="success">Accept Credit Card Offer</Button>
+            <Button variant="outline-secondary">Review Terms & Conditions</Button>
+          </div>
+        </Card.Body>
+      </Card>
+
+      {/* Help Section */}
+      <div className="text-center mt-4">
+        <h6 className="fw-bold">Need Help?</h6>
+        <div className="d-flex justify-content-center gap-4 mt-2">
+          <div>
+            <i className="bi bi-telephone-fill"></i>
+            <p className="small mb-0">Call Us</p>
+          </div>
+          <div>
+            <i className="bi bi-chat-dots-fill"></i>
+            <p className="small mb-0">Live Chat</p>
+          </div>
+          <div>
+            <i className="bi bi-envelope-fill"></i>
+            <p className="small mb-0">Email Support</p>
+          </div>
+        </div>
+      </div>
+    </Container>
+  );
 }
