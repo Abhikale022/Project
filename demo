@@ -1,86 +1,85 @@
-import React from "react";
-import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
-import "./ApplicationStatus.css";
+/* Container */
+.timeline-container {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 20px;
+}
 
-const ApplicationStatus = () => {
-  const steps = [
-    {
-      title: "Application Submitted",
-      description: "Your credit card application has been successfully received",
-      duration: "Instant",
-      completed: true,
-    },
-    {
-      title: "Application Processing",
-      description: "We are reviewing your application and verifying your information",
-      duration: "1-2 business days",
-      completed: true,
-    },
-    {
-      title: "Credit Card Offered",
-      description: "Congratulations! Your application has been approved",
-      duration: "2-3 business days",
-      completed: true,
-    },
-    {
-      title: "Application Accepted",
-      description: "Accept your offer to receive your new credit card",
-      duration: "Action Required",
-      completed: false,
-      highlight: true,
-    },
-    {
-      title: "Printed",
-      description: "Card is being printed",
-      completed: false,
-    },
-    {
-      title: "Shipped",
-      description: "Card has been dispatched for delivery",
-      completed: false,
-    },
-  ];
+.timeline-title {
+  font-weight: bold;
+  text-align: right;
+  margin-bottom: 20px;
+}
 
-  return (
-    <div className="timeline-container">
-      <h5 className="timeline-title">Application Timeline</h5>
+/* Timeline Steps */
+.timeline-step {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  margin-bottom: 30px;
+}
 
-      <div className="timeline">
-        {steps.map((step, index) => (
-          <div className="timeline-step" key={index}>
-            {/* Left Side - Icon */}
-            <div className="timeline-icon">
-              {step.completed ? (
-                <FaCheckCircle className="icon completed" />
-              ) : (
-                <FaRegCircle className="icon pending" />
-              )}
-              {/* Vertical Line */}
-              {index !== steps.length - 1 && <div className="timeline-line"></div>}
-            </div>
+/* Left Icon */
+.timeline-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 15px;
+  position: relative;
+}
 
-            {/* Right Side - Content */}
-            <div className="timeline-content">
-              <div
-                className={`timeline-title-text ${
-                  step.highlight ? "highlight" : ""
-                }`}
-              >
-                {step.title}
-                {step.highlight && (
-                  <span className="badge-action">Action Required</span>
-                )}
-              </div>
-              <div className="timeline-desc">{step.description}</div>
-              {step.duration && !step.highlight && (
-                <div className="timeline-duration">{step.duration}</div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
+.icon {
+  font-size: 22px;
+}
 
-export default ApplicationStatus;
+.icon.completed {
+  color: green;
+}
+
+.icon.pending {
+  color: #bbb;
+}
+
+/* Vertical line */
+.timeline-line {
+  flex-grow: 1;
+  width: 2px;
+  background-color: #ccc;
+  margin-top: 4px;
+}
+
+/* Right Content */
+.timeline-content {
+  flex: 1;
+}
+
+.timeline-title-text {
+  font-weight: bold;
+  color: black;
+}
+
+.timeline-title-text.highlight {
+  color: #0056b3;
+}
+
+.timeline-desc {
+  color: #666;
+  margin-top: 2px;
+}
+
+.timeline-duration {
+  font-size: 0.85rem;
+  color: #888;
+  margin-top: 2px;
+}
+
+/* Badge for Action Required */
+.badge-action {
+  background: #ffc107;
+  color: black;
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 5px;
+  margin-left: 8px;
+}
