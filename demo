@@ -1,109 +1,177 @@
-import React from "react";
-import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
-import "./ApplicationStatus.css";
+.status-container {
+  max-width: 750px;
+  margin: 30px auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
 
-const ApplicationStatus = () => {
-  const steps = [
-    {
-      title: "Application Submitted",
-      description: "Your credit card application has been successfully received",
-      date: "Dec 15, 2024",
-      completed: true,
-    },
-    {
-      title: "Application Processing",
-      description: "We are reviewing your application and verifying your information",
-      date: "Dec 16, 2024",
-      completed: true,
-    },
-    {
-      title: "Credit Card Offered",
-      description: "Congratulations! Your application has been approved",
-      date: "Dec 18, 2024",
-      completed: true,
-    },
-    {
-      title: "Application Accepted",
-      description: "Accept your offer to receive your new credit card",
-      date: "Waiting for your action",
-      completed: false,
-      highlight: true,
-    },
-  ];
+.status-header {
+  text-align: center;
+  font-size: 1.4rem;
+  margin-bottom: 5px;
+}
 
-  const completedSteps = steps.filter((s) => s.completed).length;
-  const totalSteps = steps.length;
+.status-subtitle {
+  text-align: center;
+  color: #555;
+  margin-bottom: 20px;
+}
 
-  return (
-    <div className="status-container">
-      <h3 className="status-header">Credit Card Application Status</h3>
-      <p className="status-subtitle">
-        Track your application progress. We'll keep you updated at every step.
-      </p>
+/* Progress Bar */
+.progress-box {
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 25px;
+}
 
-      {/* Progress Bar */}
-      <div className="progress-box">
-        <div className="progress-header">
-          <span>Overall Progress</span>
-          <span className="progress-label">In Progress</span>
-        </div>
-        <div className="progress-bar">
-          <div
-            className="progress-fill"
-            style={{ width: `${(completedSteps / totalSteps) * 100}%` }}
-          ></div>
-        </div>
-        <p className="progress-info">
-          Step {completedSteps} of {totalSteps} completed
-        </p>
-      </div>
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
 
-      {/* Timeline */}
-      <h4 className="timeline-title">Application Timeline</h4>
-      <div className="timeline">
-        {steps.map((step, index) => (
-          <div className="timeline-step" key={index}>
-            <div className="timeline-icon">
-              {step.completed ? (
-                <FaCheckCircle className="icon completed" />
-              ) : (
-                <FaRegCircle className="icon pending" />
-              )}
-              {index !== steps.length - 1 && <div className="timeline-line"></div>}
-            </div>
-            <div className="timeline-content">
-              <div className="timeline-top">
-                <div
-                  className={`timeline-title-text ${
-                    step.highlight ? "highlight" : ""
-                  }`}
-                >
-                  {step.title}
-                  {step.highlight && (
-                    <span className="badge-action">Action Required</span>
-                  )}
-                </div>
-                <div className="timeline-date">{step.date}</div>
-              </div>
-              <div className="timeline-desc">{step.description}</div>
-            </div>
-          </div>
-        ))}
-      </div>
+.progress-label {
+  color: #007bff;
+}
 
-      {/* Final Action Box */}
-      <div className="final-box">
-        <p className="final-text">
-          Your credit card application has been approved. Accept your offer to
-          proceed with card delivery.
-        </p>
-        <div className="final-buttons">
-          <button className="btn-primary">Accept Credit Card Offer</button>
-          <button className="btn-secondary">Review Terms & Conditions</button>
-        </div>
-      </div>
-    </div>
-  );
-};
+.progress-bar {
+  background: #eaeaea;
+  height: 8px;
+  border-radius: 5px;
+  margin-bottom: 8px;
+}
 
-export default ApplicationStatus;
+.progress-fill {
+  background: #007bff;
+  height: 100%;
+  border-radius: 5px;
+}
+
+.progress-info {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* Timeline */
+.timeline-title {
+  margin-bottom: 15px;
+}
+
+.timeline-step {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 25px;
+}
+
+.timeline-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 15px;
+  position: relative;
+}
+
+.icon {
+  font-size: 22px;
+}
+
+.icon.completed {
+  color: green;
+}
+
+.icon.pending {
+  color: #007bff;
+}
+
+.timeline-line {
+  flex-grow: 1;
+  width: 2px;
+  background-color: #ccc;
+  margin-top: 4px;
+}
+
+.timeline-content {
+  flex: 1;
+}
+
+.timeline-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timeline-title-text {
+  font-weight: bold;
+}
+
+.timeline-title-text.highlight {
+  color: #007bff;
+}
+
+.timeline-date {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.timeline-desc {
+  color: #555;
+  margin-top: 4px;
+}
+
+/* Badge */
+.badge-action {
+  background: #f8d7da;
+  color: #c00;
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+/* Final Box */
+.final-box {
+  background: #eafbea;
+  border: 1px solid #b6e2b6;
+  padding: 15px;
+  border-radius: 6px;
+  margin-top: 20px;
+}
+
+.final-text {
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.final-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-primary {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  padding: 8px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #218838;
+}
+
+.btn-secondary:hover {
+  background: #e2e2e2;
+}
