@@ -1,9 +1,29 @@
-package com.scb.creditcardorigination.customer.repository;
+package com.scb.creditcardorigination.customer.service;
 
 import com.scb.creditcardorigination.customer.model.Customer;
-import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.Optional;
+import com.scb.creditcardorigination.customer.repository.CustomerRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
-public interface CustomerRepository extends JpaRepository<Customer, Long> {
-    Optional<Customer> findByEmail(String email);
+@Service
+public class CustomerService {
+
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    public String signup(Customer customer) {
+        customer.setPassword(passwordEncoder.encode(customer.getPassword())); // encrypt password
+        customerRepository.save(customer);
+        return "Account created successfully!";
+    }
+
+    public String login(String email, String password) {
+        return customerRepository.findByEmail(email)
+                .map(c -> passwordEncoder.matches(password, c.getPassword()) ? "Login successful" : "Invalid password")
+                .orElse("User not found");
+    }
 }
