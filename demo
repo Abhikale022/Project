@@ -1,177 +1,285 @@
-.status-container {
-  max-width: 750px;
-  margin: 30px auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
+import React, { useState } from "react";
+import { Modal, Button, Form, Alert } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import sclogo from "../assets/sclogo.png";
+ 
+function UnifiedLoginModal({ show, onHide }) {
+  const [mode, setMode] = useState("customer"); // "customer" | "signup" | "sales"
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+    name: "",
+    email: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [registeredUser, setRegisteredUser] = useState(null);
+  const navigate = useNavigate();
+ 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+ 
+  const resetForm = () => {
+    setFormData({
+      username: "",
+      password: "",
+      name: "",
+      email: "",
+      confirmPassword: "",
+    });
+    setError("");
+    setSuccess("");
+  };
+ 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+ 
+    if (mode === "signup") {
+      if (
+        !formData.name ||
+        !formData.email ||
+        !formData.password ||
+        !formData.confirmPassword
+      ) {
+        setError("All fields are required.");
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError("Passwords do not match.");
+        return;
+      }
+      setRegisteredUser({
+        username: formData.email,
+        password: formData.password,
+      });
+      setSuccess("Account created successfully! Please login.");
+      setMode("customer");
+      resetForm();
+      return;
+    }
+ 
+    if (mode === "customer") {
+      if (!formData.username || !formData.password) {
+        setError("Both username and password are required.");
+        return;
+      }
+      if (
+        !registeredUser ||
+        formData.username !== registeredUser.username ||
+        formData.password !== registeredUser.password
+      ) {
+        setError("Invalid username or password.");
+        return;
+      }
+      setSuccess("Customer login successful!");
+      setTimeout(() => {
+        onHide();
+        navigate("/CreditCardApplicationForm");
+      }, 1500);
+      return;
+    }
+ 
+    if (mode === "sales") {
+      if (!formData.username || !formData.password) {
+        setError("Both username and password are required.");
+        return;
+      }
+      setSuccess("Sales login successful!");
+      setTimeout(() => {
+        onHide();
+        navigate("/Onboarding"); // your sales route
+      }, 1500);
+      return;
+    }
+  };
+ 
+  return (
+    <Modal show={show} onHide={onHide} centered>
+      <Modal.Body style={{ width: "100%", maxWidth: "400px", margin: "auto" }}>
+        {/* Logo */}
+        <div className="text-center">
+          <img
+            src={sclogo}
+            alt="Standard Chartered"
+            style={{ width: "200px", marginBottom: "20px" }}
+          />
+          <h5 style={{ marginBottom: "20px" }}>
+            {mode === "customer" && "Customer Login"}
+            {mode === "signup" && "Customer Sign Up"}
+            {mode === "sales" && "Sales Login"}
+          </h5>
+        </div>
+ 
+        {/* Alerts */}
+        {error && <Alert variant="danger">{error}</Alert>}
+        {success && <Alert variant="success">{success}</Alert>}
+ 
+        <Form onSubmit={handleSubmit}>
+          {/* Customer Sign Up */}
+          {mode === "signup" && (
+            <>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="text"
+                  name="name"
+                  placeholder="Full Name"
+                  value={formData.name}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="password"
+                  name="password"
+                  placeholder="Create Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="password"
+                  name="confirmPassword"
+                  placeholder="Confirm Password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+            </>
+          )}
+ 
+          {/* Customer Login */}
+          {mode === "customer" && (
+            <>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="text"
+                  name="username"
+                  placeholder="Username (Email)"
+                  value={formData.username}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-2">
+                <Form.Control
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <div className="text-end mb-4">
+                <a href="#" style={{ fontSize: "0.9rem" }}>
+                  → Forgot Username / Password
+                </a>
+              </div>
+            </>
+          )}
+ 
+          {/* Sales Login */}
+          {mode === "sales" && (
+            <>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="text"
+                  name="username"
+                  placeholder="Sales Username"
+                  value={formData.username}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-2">
+                <Form.Control
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+            </>
+          )}
+ 
+          {/* Buttons */}
+          <div className="d-flex gap-3">
+            <Button
+              type="submit"
+              style={{
+                flex: 1,
+                backgroundColor: "#0d6efd",
+                border: "none",
+                height: "45px",
+              }}
+            >
+              {mode === "signup"
+                ? "Sign Up"
+                : mode === "customer"
+                ? "Login"
+                : "Login"}
+            </Button>
+            {mode !== "sales" && (
+              <Button
+                type="button"
+                onClick={() => {
+                  resetForm();
+                  setMode(mode === "signup" ? "customer" : "signup");
+                }}
+                style={{
+                  flex: 1,
+                  backgroundColor: mode === "signup" ? "#0d6efd" : "#28a745",
+                  border: "none",
+                  height: "45px",
+                }}
+              >
+                {mode === "signup" ? "Login" : "Sign Up"}
+              </Button>
+            )}
+          </div>
+        </Form>
+ 
+        {/* Switch Links */}
+        <div className="text-center mt-3">
+          {mode !== "sales" ? (
+            <a
+              href="#"
+              onClick={() => {
+                resetForm();
+                setMode("sales");
+              }}
+              style={{ fontSize: "0.9rem", color: "#0d6efd" }}
+            >
+              Are you a sales user?
+            </a>
+          ) : (
+            <a
+              href="#"
+              onClick={() => {
+                resetForm();
+                setMode("customer");
+              }}
+              style={{ fontSize: "0.9rem", color: "#0d6efd" }}
+            >
+              ← Back to Customer Login
+            </a>
+          )}
+        </div>
+      </Modal.Body>
+    </Modal>
+  );
 }
-
-.status-header {
-  text-align: center;
-  font-size: 1.4rem;
-  margin-bottom: 5px;
-}
-
-.status-subtitle {
-  text-align: center;
-  color: #555;
-  margin-bottom: 20px;
-}
-
-/* Progress Bar */
-.progress-box {
-  border: 1px solid #ddd;
-  padding: 15px;
-  border-radius: 6px;
-  margin-bottom: 25px;
-}
-
-.progress-header {
-  display: flex;
-  justify-content: space-between;
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.progress-label {
-  color: #007bff;
-}
-
-.progress-bar {
-  background: #eaeaea;
-  height: 8px;
-  border-radius: 5px;
-  margin-bottom: 8px;
-}
-
-.progress-fill {
-  background: #007bff;
-  height: 100%;
-  border-radius: 5px;
-}
-
-.progress-info {
-  font-size: 0.85rem;
-  color: #666;
-}
-
-/* Timeline */
-.timeline-title {
-  margin-bottom: 15px;
-}
-
-.timeline-step {
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 25px;
-}
-
-.timeline-icon {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-right: 15px;
-  position: relative;
-}
-
-.icon {
-  font-size: 22px;
-}
-
-.icon.completed {
-  color: green;
-}
-
-.icon.pending {
-  color: #007bff;
-}
-
-.timeline-line {
-  flex-grow: 1;
-  width: 2px;
-  background-color: #ccc;
-  margin-top: 4px;
-}
-
-.timeline-content {
-  flex: 1;
-}
-
-.timeline-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.timeline-title-text {
-  font-weight: bold;
-}
-
-.timeline-title-text.highlight {
-  color: #007bff;
-}
-
-.timeline-date {
-  font-size: 0.85rem;
-  color: #666;
-}
-
-.timeline-desc {
-  color: #555;
-  margin-top: 4px;
-}
-
-/* Badge */
-.badge-action {
-  background: #f8d7da;
-  color: #c00;
-  font-size: 0.75rem;
-  font-weight: bold;
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-left: 8px;
-}
-
-/* Final Box */
-.final-box {
-  background: #eafbea;
-  border: 1px solid #b6e2b6;
-  padding: 15px;
-  border-radius: 6px;
-  margin-top: 20px;
-}
-
-.final-text {
-  margin-bottom: 15px;
-  color: #333;
-}
-
-.final-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-.btn-primary {
-  background: #28a745;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-secondary {
-  background: #f0f0f0;
-  color: #333;
-  border: 1px solid #ccc;
-  padding: 8px 14px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-primary:hover {
-  background: #218838;
-}
-
-.btn-secondary:hover {
-  background: #e2e2e2;
-}
+ 
+export default UnifiedLoginModal;
