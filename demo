@@ -1,29 +1,27 @@
-package com.scb.creditcardorigination.customer.service;
+package com.scb.creditcardorigination.config;
 
-import com.scb.creditcardorigination.customer.model.Customer;
-import com.scb.creditcardorigination.customer.repository.CustomerRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import org.springframework.security.web.SecurityFilterChain;
 
-@Service
-public class CustomerService {
+@Configuration
+public class SecurityConfig {
 
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    public String signup(Customer customer) {
-        customer.setPassword(passwordEncoder.encode(customer.getPassword())); // encrypt password
-        customerRepository.save(customer);
-        return "Account created successfully!";
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
-    public String login(String email, String password) {
-        return customerRepository.findByEmail(email)
-                .map(c -> passwordEncoder.matches(password, c.getPassword()) ? "Login successful" : "Invalid password")
-                .orElse("User not found");
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/customer/**", "/sales/**").permitAll()
+                .anyRequest().authenticated()
+            );
+        return http.build();
     }
 }
