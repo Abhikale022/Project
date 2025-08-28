@@ -1,25 +1,9 @@
-package com.scb.creditcardorigination.customer.controller;
+package com.scb.creditcardorigination.customer.repository;
 
 import com.scb.creditcardorigination.customer.model.Customer;
-import com.scb.creditcardorigination.customer.service.CustomerService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Optional;
 
-@RestController
-@RequestMapping("/customer")
-@CrossOrigin(origins = "http://localhost:3000") // allow frontend calls
-public class CustomerController {
-
-    @Autowired
-    private CustomerService customerService;
-
-    @PostMapping("/signup")
-    public String signup(@RequestBody Customer customer) {
-        return customerService.signup(customer);
-    }
-
-    @PostMapping("/login")
-    public String login(@RequestParam String email, @RequestParam String password) {
-        return customerService.login(email, password);
-    }
+public interface CustomerRepository extends JpaRepository<Customer, Long> {
+    Optional<Customer> findByEmail(String email);
 }
