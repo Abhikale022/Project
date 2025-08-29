@@ -1,5 +1,25 @@
-package com.scb.creditcardorigination.salesuser.service;
+package com.scb.creditcardorigination.salesuser.controller;
 
-public interface SalesUserService {
-    String login(String userId, String password);
+import com.scb.creditcardorigination.salesuser.service.SalesUserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/sales")
+public class SalesUserController {
+
+    @Autowired
+    private SalesUserService salesUserService;
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestParam String userId,
+                                        @RequestParam String password) {
+        String result = salesUserService.login(userId, password);
+        if (result.startsWith("SalesUser login successful")) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
 }
