@@ -1,22 +1,394 @@
 import axios from "axios";
-
-const API_URL = "http://localhost:8080/api/sales"; // change if your backend URL is different
+import UnifiedLoginModal from "../components/UnifiedLoginModal";
+const API_BASE_URL = "http://localhost:8080";
 
 const loginSalesUser = async (credentials) => {
-  try {
-    const response = await axios.post(`${API_URL}/login`, {
-      userId: credentials.userId,   // must match SalesUser.java field
-      password: credentials.password
+    try {
+      const response = await axios.post(`${API_BASE_URL}/salesuser/login`, {
+        userId: credentials.userId,   // must match SalesUser.java field
+        password: credentials.password
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Login failed:", error.response ? error.response.data : error.message);
+      throw error;
+    }
+  };
+  
+  const UnifiedLoginModalService = {
+    loginSalesUser,
+  };
+export default UnifiedLoginModalService;
+
+
+import React, { useState } from "react";
+import { Modal, Button, Form, Alert } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import sclogo from "../assets/sclogo.png";
+import UnifiedLoginModalService from "../service/UnifiedLoginModalService";
+
+function UnifiedLoginModal({ show, onHide }) {
+  const [mode, setMode] = useState("customer"); // "customer" | "signup" | "sales"
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+    name: "",
+    email: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [registeredUser, setRegisteredUser] = useState(null);
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const resetForm = () => {
+    setFormData({
+      username: "",
+      password: "",
+      name: "",
+      email: "",
+      confirmPassword: "",
     });
-    return response.data;
-  } catch (error) {
-    console.error("Login failed:", error.response ? error.response.data : error.message);
-    throw error;
+    setError("");
+    setSuccess("");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (mode === "signup") {
+      if (
+        !formData.name ||
+        !formData.email ||
+        !formData.password ||
+        !formData.confirmPassword
+      ) {
+        setError("All fields are required.");
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError("Passwords do not match.");
+        return;
+      }
+      setRegisteredUser({
+        username: formData.email,
+        password: formData.password,
+      });
+      setSuccess("Account created successfully! Please login.");
+      setMode("customer");
+      resetForm();
+      return;
+    }
+
+    if (mode === "customer") {
+      if (!formData.username || !formData.password) {
+        setError("Both username and password are required.");
+        return;
+      }
+      if (
+        !registeredUser ||
+        formData.username !== registeredUser.username ||
+        formData.password !== registeredUser.password
+      ) {
+        setError("Invalid username or password.");
+        return;
+      }
+      setSuccess("Customer login successful!");
+      setTimeout(() => {
+        onHide();
+        navigate("/CreditCardApplicationForm");
+      }, 1500);
+      return;
+    }
+
+    if (mode === "sales") {
+      if (!formData.username || !formData.password) {
+        setError("Both username and password are required.");
+        return;
+      }
+      try{
+        const response = await UnifiedLoginModalService.loginSales({
+          userId: formData.username,
+          password: formData.password,
+        });
+        console.log("sales login response:", response)
+
+      if (response.success){
+      setSuccess("Sales login successful!");
+      setTimeout(() => {
+        onHide();
+        navigate("/Onboarding"); // your sales route
+      }, 1500);
+    } else {
+      setError(response.message || "Invalid sales cred");
+    }
   }
-};
+     catch (err){
+      setError("Invalid sales credentials.")
+    }
+      return;
+    }
+  };
 
-const salesUserService = {
-  loginSalesUser,
-};
+  return (
+    <Modal show={show} onHide={onHide} centered>
+      <Modal.Body style={{ width: "100%", maxWidth: "400px", margin: "auto" }}>
+        {/* Logo */}
+        <div className="text-center">
+          <img
+            src={sclogo}
+            alt="Standard Chartered"
+            style={{ width: "200px", marginBottom: "20px" }}
+          />
+          <h5 style={{ marginBottom: "20px" }}>
+            {mode === "customer" && "Customer Login"}
+            {mode === "signup" && "Customer Sign Up"}
+            {mode === "sales" && "Sales Login"}
+          </h5>
+        </div>
 
-export default salesUserService;
+        {/* Alerts */}
+        {error && <Alert variant="danger">{error}</Alert>}
+        {success && <Alert variant="success">{success}</Alert>}
+
+        <Form onSubmit={handleSubmit}>
+          {/* Customer Sign Up */}
+          {mode === "signup" && (
+            <>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="text"
+                  name="name"
+                  placeholder="Full Name"
+                  value={formData.name}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="password"
+                  name="password"
+                  placeholder="Create Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="password"
+                  name="confirmPassword"
+                  placeholder="Confirm Password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+            </>
+          )}
+
+          {/* Customer Login */}
+          {mode === "customer" && (
+            <>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="text"
+                  name="username"
+                  placeholder="Username (Email)"
+                  value={formData.username}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-2">
+                <Form.Control
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <div className="text-end mb-4">
+                <a href="#" style={{ fontSize: "0.9rem" }}>
+                  → Forgot Username / Password
+                </a>
+              </div>
+            </>
+          )}
+
+          {/* Sales Login */}
+          {mode === "sales" && (
+            <>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="text"
+                  name="username"
+                  placeholder="Sales Username"
+                  value={formData.username}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-2">
+                <Form.Control
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+            </>
+          )}
+
+          {/* Buttons */}
+          <div className="d-flex gap-3">
+            <Button
+              type="submit"
+              style={{
+                flex: 1,
+                backgroundColor: "#0d6efd",
+                border: "none",
+                height: "45px",
+              }}
+            >
+              {mode === "signup"
+                ? "Sign Up"
+                : mode === "customer"
+                ? "Login"
+                : "Login"}
+            </Button>
+            {mode !== "sales" && (
+              <Button
+                type="button"
+                onClick={() => {
+                  resetForm();
+                  setMode(mode === "signup" ? "customer" : "signup");
+                }}
+                style={{
+                  flex: 1,
+                  backgroundColor: mode === "signup" ? "#0d6efd" : "#28a745",
+                  border: "none",
+                  height: "45px",
+                }}
+              >
+                {mode === "signup" ? "Login" : "Sign Up"}
+              </Button>
+            )}
+          </div>
+        </Form>
+
+        {/* Switch Links */}
+        <div className="text-center mt-3">
+          {mode !== "sales" ? (
+            <a
+              href="#"
+              onClick={() => {
+                resetForm();
+                setMode("sales");
+              }}
+              style={{ fontSize: "0.9rem", color: "#0d6efd" }}
+            >
+              Are you a sales user?
+            </a>
+          ) : (
+            <a
+              href="#"
+              onClick={() => {
+                resetForm();
+                setMode("customer");
+              }}
+              style={{ fontSize: "0.9rem", color: "#0d6efd" }}
+            >
+              ← Back to Customer Login
+            </a>
+          )}
+        </div>
+      </Modal.Body>
+    </Modal>
+  );
+}
+
+export default UnifiedLoginModal;
+
+
+
+package com.scb.creditcardorigination.salesUser.model;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name="sales_users")
+public class SalesUser {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    private String userId;   // login id
+    private String password; // encoded password
+
+    // -------- Getters & Setters --------
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+}
+package com.scb.creditcardorigination.salesUser.controller;
+
+import com.scb.creditcardorigination.salesUser.services.SalesUserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/salesuser")
+@CrossOrigin(origins = "http://localhost:3000")
+public class SalesUserController {
+
+    @Autowired
+    private SalesUserService salesUserService;
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestParam String userId,
+                                        @RequestParam String password) {
+        if (salesUserService.login(userId, password)) {
+            return ResponseEntity.ok("login successful for user: " + userId);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials");
+        }
+    }
+}
+package com.scb.creditcardorigination.salesUser.repository;
+
+import com.scb.creditcardorigination.salesUser.model.SalesUser;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface SalesUserRepository extends JpaRepository<SalesUser, Long> {
+    Optional<SalesUser> findByUserId(String userId);
+}
