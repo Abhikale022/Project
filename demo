@@ -1,9 +1,30 @@
-package com.xase.springboottraining.repository;
+package com.xase.springboottraining.service;
 
 import com.xase.springboottraining.model.CustomerLoginSignup;
-import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.Optional;
+import com.xase.springboottraining.repository.CustomerLoginSignupRepository;
+import org.springframework.stereotype.Service;
 
-public interface CustomerLoginSignupRepository extends JpaRepository<CustomerLoginSignup, Long> {
-    Optional<CustomerLoginSignup> findByEmail(String email);
+@Service
+public class CustomerLoginSignupServiceImpl implements CustomerLoginSignupService {
+
+    private final CustomerLoginSignupRepository repository;
+
+    public CustomerLoginSignupServiceImpl(CustomerLoginSignupRepository repository) {
+        this.repository = repository;
+    }
+
+    @Override
+    public CustomerLoginSignup register(CustomerLoginSignup customer) {
+        if (repository.findByEmail(customer.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already registered");
+        }
+        return repository.save(customer);
+    }
+
+    @Override
+    public CustomerLoginSignup login(String email, String password) {
+        return repository.findByEmail(email)
+                .filter(c -> c.getPassword().equals(password))
+                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+    }
 }
