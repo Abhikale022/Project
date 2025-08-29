@@ -1,10 +1,5 @@
-package com.scb.creditcardorigination.salesuser.repository;
+package com.scb.creditcardorigination.salesuser.service;
 
-import com.scb.creditcardorigination.salesuser.model.SalesUser;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.Optional;
-
-public interface SalesUserRepository extends JpaRepository<SalesUser, Long> {
-    Optional<SalesUser> findByUserId(String userId);
+public interface SalesUserService {
+    String login(String userId, String password);
 }
