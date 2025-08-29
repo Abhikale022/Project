@@ -1,30 +1,36 @@
-package com.xase.springboottraining.service;
+package com.xase.springboottraining.controller;
 
 import com.xase.springboottraining.model.CustomerLoginSignup;
-import com.xase.springboottraining.repository.CustomerLoginSignupRepository;
-import org.springframework.stereotype.Service;
+import com.xase.springboottraining.service.CustomerLoginSignupService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-@Service
-public class CustomerLoginSignupServiceImpl implements CustomerLoginSignupService {
+@RestController
+@RequestMapping("/customerloginsignup")
+@CrossOrigin(origins = "http://localhost:3000")
+public class CustomerLoginSignupController {
 
-    private final CustomerLoginSignupRepository repository;
+    private final CustomerLoginSignupService service;
 
-    public CustomerLoginSignupServiceImpl(CustomerLoginSignupRepository repository) {
-        this.repository = repository;
+    public CustomerLoginSignupController(CustomerLoginSignupService service) {
+        this.service = service;
     }
 
-    @Override
-    public CustomerLoginSignup register(CustomerLoginSignup customer) {
-        if (repository.findByEmail(customer.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already registered");
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(@RequestBody CustomerLoginSignup customer) {
+        try {
+            return ResponseEntity.ok(service.register(customer));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-        return repository.save(customer);
     }
 
-    @Override
-    public CustomerLoginSignup login(String email, String password) {
-        return repository.findByEmail(email)
-                .filter(c -> c.getPassword().equals(password))
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody CustomerLoginSignup customer) {
+        try {
+            return ResponseEntity.ok(service.login(customer.getEmail(), customer.getPassword()));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(e.getMessage());
+        }
     }
 }
