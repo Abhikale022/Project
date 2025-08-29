@@ -1,10 +1,11 @@
 package com.scb.creditcardorigination.salesuser.service;
 
-import com.scb.creditcardorigination.salesuser.model.SalesUser;
-import com.scb.creditcardorigination.salesuser.repository.SalesUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.scb.creditcardorigination.salesuser.repository.SalesUserRepository;
+import com.scb.creditcardorigination.salesuser.model.SalesUser;
+
+import java.util.Optional;
 
 @Service
 public class SalesUserServiceImpl implements SalesUserService {
@@ -12,15 +13,13 @@ public class SalesUserServiceImpl implements SalesUserService {
     @Autowired
     private SalesUserRepository salesUserRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
     @Override
     public String login(String userId, String password) {
-        return salesUserRepository.findByUserId(userId)
-                .filter(u -> passwordEncoder.matches(password, u.getPassword()))
-                .map(SalesUser::getUserId)
-                .map(u -> "SalesUser login successful: " + u)
-                .orElse("Invalid userId or password");
+        Optional<SalesUser> user = salesUserRepository.findByUserId(userId);
+        if (user.isPresent() && user.get().getPassword().equals(password)) {
+            return "Login successful for user: " + userId;
+        } else {
+            return "Invalid credentials!";
+        }
     }
 }
