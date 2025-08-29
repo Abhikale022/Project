@@ -1,25 +1,26 @@
-package com.scb.creditcardorigination.salesuser.controller;
+package com.scb.creditcardorigination.salesuser.service;
 
-import com.scb.creditcardorigination.salesuser.service.SalesUserService;
+import com.scb.creditcardorigination.salesuser.model.SalesUser;
+import com.scb.creditcardorigination.salesuser.repository.SalesUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
-@RestController
-@RequestMapping("/sales")
-public class SalesUserController {
+@Service
+public class SalesUserServiceImpl implements SalesUserService {
 
     @Autowired
-    private SalesUserService salesUserService;
+    private SalesUserRepository salesUserRepository;
 
-    @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestParam String userId,
-                                        @RequestParam String password) {
-        String result = salesUserService.login(userId, password);
-        if (result.startsWith("SalesUser login successful")) {
-            return ResponseEntity.ok(result);
-        } else {
-            return ResponseEntity.badRequest().body(result);
-        }
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Override
+    public String login(String userId, String password) {
+        return salesUserRepository.findByUserId(userId)
+                .filter(u -> passwordEncoder.matches(password, u.getPassword()))
+                .map(SalesUser::getUserId)
+                .map(u -> "SalesUser login successful: " + u)
+                .orElse("Invalid userId or password");
     }
 }
