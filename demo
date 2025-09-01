@@ -1,13 +1,29 @@
-package com.yourpackage.model;
+package com.scb.creditcardorigination.customerLoginSignup.Service;
 
-public class AuthResponse {
-    private String token;
+import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
+import com.scb.creditcardorigination.customerLoginSignup.Repository.CustomerLoginSignupRepository;
+import org.springframework.stereotype.Service;
 
-    public AuthResponse(String token) {
-        this.token = token;
+@Service
+public class CustomerLoginSignupServiceimpl implements CustomerLoginSignupService{
+    private final CustomerLoginSignupRepository repository;
+
+    public CustomerLoginSignupServiceimpl(CustomerLoginSignupRepository repository) {
+        this.repository = repository;
     }
 
-    public String getToken() {
-        return token;
+    @Override
+    public CustomerLoginSignup register(CustomerLoginSignup customer) {
+        if (repository.findByEmail(customer.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already registered");
+        }
+        return repository.save(customer);
+    }
+
+    @Override
+    public CustomerLoginSignup login(String email, String password) {
+        return repository.findByEmail(email)
+                .filter(c -> c.getPassword().equals(password))
+                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
     }
 }
