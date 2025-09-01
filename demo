@@ -1,15 +1,45 @@
-package com.scb.creditcardorigination.customerLoginSignup;
+package com.scb.creditcardorigination.customerLoginSignup.Controller;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
+import com.scb.creditcardorigination.customerLoginSignup.Model.AuthRequest;
+import com.scb.creditcardorigination.customerLoginSignup.Model.AuthResponse;
+import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
+import com.scb.creditcardorigination.customerLoginSignup.Service.CustomerLoginSignupService;
+import com.scb.creditcardorigination.customerLoginSignup.Service.JwtUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
-@SpringBootApplication
-@EnableJpaRepositories(basePackages = "com.scb.creditcardorigination.customerLoginSignup.Repository")
-@EntityScan(basePackages = "com.scb.creditcardorigination.customerLoginSignup.Model")
-public class Startc {
-    public static void main(String[] args) {
-        SpringApplication.run(Startc.class, args);
+@RestController
+@RequestMapping("/customer")
+@CrossOrigin(origins = "http://localhost:3000")
+public class CustomerLoginSignupController {
+    private final CustomerLoginSignupService service;
+    private final JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
+
+    public CustomerLoginSignupController(CustomerLoginSignupService service, JwtUtil jwtUtil, AuthenticationManager authenticationManager) {
+        this.service = service;
+        this.jwtUtil = jwtUtil;
+        this.authenticationManager = authenticationManager;
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<CustomerLoginSignup> signup(@RequestBody CustomerLoginSignup customer) {
+        return ResponseEntity.ok(service.register(customer));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+        );
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String token = jwtUtil.generateToken(userDetails);
+        return ResponseEntity.ok(new AuthResponse(token));
     }
 }
