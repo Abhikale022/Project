@@ -1,42 +1,44 @@
-package com.scb.creditcardorigination.customerLoginSignup.Service;
+package com.yourpackage.controller;
 
-import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
-import com.scb.creditcardorigination.customerLoginSignup.Repository.CustomerLoginSignupRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import com.yourpackage.model.AuthRequest;
+import com.yourpackage.model.AuthResponse;
+import com.yourpackage.model.CustomerLoginSignup;
+import com.yourpackage.service.CustomerLoginSignupService;
+import com.yourpackage.service.JwtUtil;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
-@Service
-public class CustomerLoginSignupServiceImpl implements CustomerLoginSignupService {
+@RestController
+@RequestMapping("/customer")
+public class CustomerLoginSignupController {
 
-    private final CustomerLoginSignupRepository repository;
-    private final PasswordEncoder passwordEncoder;
+    private final CustomerLoginSignupService service;
+    private final JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
 
-    public CustomerLoginSignupServiceImpl(CustomerLoginSignupRepository repository,
-                                          PasswordEncoder passwordEncoder) {
-        this.repository = repository;
-        this.passwordEncoder = passwordEncoder;
+    public CustomerLoginSignupController(CustomerLoginSignupService service, JwtUtil jwtUtil, AuthenticationManager authenticationManager) {
+        this.service = service;
+        this.jwtUtil = jwtUtil;
+        this.authenticationManager = authenticationManager;
     }
 
-    @Override
-    public CustomerLoginSignup register(CustomerLoginSignup customer) {
-        if (repository.findByEmail(customer.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already registered");
-        }
-        // Hash the password before saving
-        customer.setPassword(passwordEncoder.encode(customer.getPassword()));
-        return repository.save(customer);
+    @PostMapping("/signup")
+    public ResponseEntity<CustomerLoginSignup> signup(@RequestBody CustomerLoginSignup customer) {
+        return ResponseEntity.ok(service.register(customer));
     }
 
-    @Override
-    public CustomerLoginSignup login(String email, String rawPassword) {
-        CustomerLoginSignup customer = repository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+        );
 
-        // Compare hashed password with raw password
-        if (!passwordEncoder.matches(rawPassword, customer.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
-        }
-
-        return customer;
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String token = jwtUtil.generateToken(userDetails);
+        return ResponseEntity.ok(new AuthResponse(token));
     }
 }
