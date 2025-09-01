@@ -1,36 +1,15 @@
-package com.scb.creditcardorigination.customerLoginSignup.Repository;
-import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
-@EnableJpaRepositories
-@Repository
-public interface CustomerLoginSignupRepository extends JpaRepository<CustomerLoginSignup, Long> {
-    Optional<CustomerLoginSignup> findByEmail(String email);
-}
-
 package com.scb.creditcardorigination.customerLoginSignup;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @SpringBootApplication
+@EnableJpaRepositories(basePackages = "com.scb.creditcardorigination.customerLoginSignup.Repository")
+@EntityScan(basePackages = "com.scb.creditcardorigination.customerLoginSignup.Model")
 public class Startc {
-    public static void main(String[] args){
-        SpringApplication.run(com.scb.creditcardorigination.customerLoginSignup.Startc.class,args);
-
+    public static void main(String[] args) {
+        SpringApplication.run(Startc.class, args);
     }
-
 }
-spring.datasource.url=jdbc:postgresql://localhost:5412/postgres
-spring.datasource.driverClassName=org.postgresql.Driver
-spring.datasource.username=postgres
-spring.datasource.password=
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-spring.jpa.properties.hibernate.ddl-auto=update
-spring.sql.init.mode=always
-server.port=8080
-
-
