@@ -39,3 +39,14 @@ public class CustomerLoginSignupServiceImpl implements CustomerLoginSignupServic
         return customer;
     }
 }
+
+
+package com.scb.creditcardorigination.customerLoginSignup.Service;
+
+import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
+
+
+public interface CustomerLoginSignupService {
+    CustomerLoginSignup register(CustomerLoginSignup Customer);
+    CustomerLoginSignup login(String email, String password);
+}
