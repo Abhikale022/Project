@@ -2,32 +2,40 @@ package com.scb.creditcardorigination.customerLoginSignup.Service;
 
 import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
 import com.scb.creditcardorigination.customerLoginSignup.Repository.CustomerLoginSignupRepository;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-
 @Service
-public class CustomUserDetailsService implements UserDetailsService {
-
+public class CustomerLoginSignupServiceImpl implements CustomerLoginSignupService{
     private final CustomerLoginSignupRepository repository;
+    private final PasswordEncoder passwordEncoder;
 
-    public CustomUserDetailsService(CustomerLoginSignupRepository repository) {
+    public CustomerLoginSignupServiceImpl(CustomerLoginSignupRepository repository,
+                                          PasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        CustomerLoginSignup customer = repository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    public CustomerLoginSignup register(CustomerLoginSignup customer) {
+        if (repository.findByEmail(customer.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already registered");
+        }
+        // Hash the password before saving
+        customer.setPassword(passwordEncoder.encode(customer.getPassword()));
+        return repository.save(customer);
+    }
 
-        return new User(
-                customer.getEmail(),
-                customer.getPassword(),
-                Collections.emptyList() // no roles/authorities for now
-        );
+    @Override
+    public CustomerLoginSignup login(String email, String rawPassword) {
+        CustomerLoginSignup customer = repository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+
+        // Compare hashed password with raw password
+        if (!passwordEncoder.matches(rawPassword, customer.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        return customer;
     }
 }
