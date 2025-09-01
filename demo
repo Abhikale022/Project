@@ -1,36 +1,21 @@
-package com.xase.springboottraining.controller;
-
-import com.xase.springboottraining.model.CustomerLoginSignup;
-import com.xase.springboottraining.service.CustomerLoginSignupService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-@RestController
-@RequestMapping("/customerloginsignup")
-@CrossOrigin(origins = "http://localhost:3000")
-public class CustomerLoginSignupController {
-
-    private final CustomerLoginSignupService service;
-
-    public CustomerLoginSignupController(CustomerLoginSignupService service) {
-        this.service = service;
-    }
-
-    @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody CustomerLoginSignup customer) {
-        try {
-            return ResponseEntity.ok(service.register(customer));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody CustomerLoginSignup customer) {
-        try {
-            return ResponseEntity.ok(service.login(customer.getEmail(), customer.getPassword()));
-        } catch (Exception e) {
-            return ResponseEntity.status(401).body(e.getMessage());
-        }
-    }
-}
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-api</artifactId>
+    <version>0.11.5</version>
+</dependency>
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-impl</artifactId>
+    <version>0.11.5</version>
+    <scope>runtime</scope>
+</dependency>
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-jackson</artifactId>
+    <version>0.11.5</version>
+    <scope>runtime</scope>
+</dependency>
