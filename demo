@@ -2,14 +2,19 @@ package com.scb.creditcardorigination.customerLoginSignup.Service;
 
 import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
 import com.scb.creditcardorigination.customerLoginSignup.Repository.CustomerLoginSignupRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CustomerLoginSignupServiceimpl implements CustomerLoginSignupService{
-    private final CustomerLoginSignupRepository repository;
+public class CustomerLoginSignupServiceImpl implements CustomerLoginSignupService {
 
-    public CustomerLoginSignupServiceimpl(CustomerLoginSignupRepository repository) {
+    private final CustomerLoginSignupRepository repository;
+    private final PasswordEncoder passwordEncoder;
+
+    public CustomerLoginSignupServiceImpl(CustomerLoginSignupRepository repository,
+                                          PasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -17,13 +22,21 @@ public class CustomerLoginSignupServiceimpl implements CustomerLoginSignupServic
         if (repository.findByEmail(customer.getEmail()).isPresent()) {
             throw new RuntimeException("Email already registered");
         }
+        // Hash the password before saving
+        customer.setPassword(passwordEncoder.encode(customer.getPassword()));
         return repository.save(customer);
     }
 
     @Override
-    public CustomerLoginSignup login(String email, String password) {
-        return repository.findByEmail(email)
-                .filter(c -> c.getPassword().equals(password))
+    public CustomerLoginSignup login(String email, String rawPassword) {
+        CustomerLoginSignup customer = repository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+
+        // Compare hashed password with raw password
+        if (!passwordEncoder.matches(rawPassword, customer.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        return customer;
     }
 }
