@@ -1,142 +1,61 @@
-package com.scb.creditcardorigination.customerLoginSignup.Model;
+package com.scb.creditcardorigination.customerLoginSignup.Service;
 
-import jakarta.persistence.*;
-
-@Entity
-    @Table(name = "customer_login_signup")
-    public class CustomerLoginSignup {
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
-
-        @Column(nullable = false)
-        private String name;
-
-        @Column(nullable = false, unique = true)
-        private String email;
-
-        @Column(nullable = false)
-        private String password;
-
-        public CustomerLoginSignup() {}
-
-        public CustomerLoginSignup(String name, String email, String password) {
-            this.name = name;
-            this.email = email;
-            this.password = password;
-        }
-
-        // Getters & Setters
-        public Long getId() { return id; }
-        public void setId(Long id) { this.id = id; }
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
-    }
-
-package com.scb.creditcardorigination.customerLoginSignup.Controller;
-
-import com.scb.creditcardorigination.customerLoginSignup.Model.AuthRequest;
-import com.scb.creditcardorigination.customerLoginSignup.Model.AuthResponse;
-import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
-import com.scb.creditcardorigination.customerLoginSignup.Service.CustomerLoginSignupService;
-import com.scb.creditcardorigination.customerLoginSignup.Service.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Component;
 
-@RestController
-@RequestMapping("/customer")
-@CrossOrigin(origins = "http://localhost:3000")
-public class CustomerLoginSignupController {
-    private final CustomerLoginSignupService service;
-    private final JwtUtil jwtUtil;
-    private final AuthenticationManager authenticationManager;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
-    public CustomerLoginSignupController(CustomerLoginSignupService service, JwtUtil jwtUtil, AuthenticationManager authenticationManager) {
-        this.service = service;
-        this.jwtUtil = jwtUtil;
-        this.authenticationManager = authenticationManager;
+@Component
+public class JwtUtil {
+    private final String SECRET_KEY = "your_secret_key"; // use env variable in prod
+
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
     }
 
-    @PostMapping("/signup")
-    public ResponseEntity<CustomerLoginSignup> signup(@RequestBody CustomerLoginSignup customer) {
-        return ResponseEntity.ok(service.register(customer));
+    public Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
-
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String token = jwtUtil.generateToken(userDetails);
-        return ResponseEntity.ok(new AuthResponse(token));
-    }
-}
-package com.scb.creditcardorigination.customerLoginSignup.Repository;
-import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
-import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.Optional;
-public interface CustomerLoginSignupRepository extends JpaRepository<CustomerLoginSignup, Long> {
-    Optional<CustomerLoginSignup> findByEmail(String email);
-}
-package com.scb.creditcardorigination.customerLoginSignup.Service;
-
-import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
-
-
-public interface CustomerLoginSignupService {
-    CustomerLoginSignup register(CustomerLoginSignup Customer);
-    CustomerLoginSignup login(String email, String password);
-}
-package com.scb.creditcardorigination.customerLoginSignup.Service;
-
-import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
-import com.scb.creditcardorigination.customerLoginSignup.Repository.CustomerLoginSignupRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-@Service
-public class CustomerLoginSignupServiceimpl implements CustomerLoginSignupService{
-    private final CustomerLoginSignupRepository repository;
-    private final PasswordEncoder passwordEncoder;
-
-    public CustomerLoginSignupServiceImpl(CustomerLoginSignupRepository repository,
-                                          PasswordEncoder passwordEncoder) {
-        this.repository = repository;
-        this.passwordEncoder = passwordEncoder;
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
     }
 
-    @Override
-    public CustomerLoginSignup register(CustomerLoginSignup customer) {
-        if (repository.findByEmail(customer.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already registered");
-        }
-        // Hash the password before saving
-        customer.setPassword(passwordEncoder.encode(customer.getPassword()));
-        return repository.save(customer);
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .parseClaimsJws(token)
+                .getBody();
     }
 
-    @Override
-    public CustomerLoginSignup login(String email, String rawPassword) {
-        CustomerLoginSignup customer = repository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+    private Boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
 
-        // Compare hashed password with raw password
-        if (!passwordEncoder.matches(rawPassword, customer.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
-        }
+    public String generateToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        return createToken(claims, userDetails.getUsername());
+    }
 
-        return customer;
+    private String createToken(Map<String, Object> claims, String subject) {
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .compact();
+    }
+
+    public Boolean validateToken(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 }
-for this above code for customer signup and login give me jwt authentication and password should be stored in encrypted manner in database
