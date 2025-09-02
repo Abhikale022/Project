@@ -1,56 +1,56 @@
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #f0f0f0;
-}
+import React, { useState } from "react";
+import "./Faq.css";
 
-.faq-container {
-  max-width: 800px;
-  margin: 50px auto;
-  background-color: #00539C; /* Blue like Standard Chartered */
-  padding: 20px;
-  border-radius: 8px;
-  color: #fff;
-}
+const Faq = () => {
+  const [openIndex, setOpenIndex] = useState(null);
 
-.faq-container h1 {
-  text-align: center;
-  margin-bottom: 30px;
-}
+  const faqs = [
+    {
+      question: "What is a credit card?",
+      answer:
+        "A credit card is a simple and efficient way to make payments. It negates the need to carry cash or issue checks and is designed to make spending a rewarding experience. It helps in handling physical and online payments and is useful in emergencies.",
+    },
+    {
+      question: "What are the benefits of a credit card?",
+      answer:
+        "Benefits include rewards programs, discounts, EMI conversion, digital payment solutions, and emergency cash access.",
+    },
+    {
+      question: "What is the eligibility criteria to get a Standard Chartered Credit Card online?",
+      answer:
+        "Eligibility depends on age, income, employment type, and credit history as per bank norms.",
+    },
+    {
+      question: "How to apply for a Standard Chartered Credit Card?",
+      answer:
+        "You can apply online through the official Standard Chartered Bank website, complete KYC, and get instant approval in many cases.",
+    },
+    {
+      question: "What are the types of Credit Cards offered by Standard Chartered in India?",
+      answer:
+        "Standard Chartered offers multiple cards including rewards cards, cashback cards, lifestyle cards, and premium travel cards.",
+    },
+  ];
 
-.faq-item {
-  background-color: #fff;
-  color: #000;
-  margin: 10px 0;
-  border-radius: 6px;
-  overflow: hidden;
-}
+  const toggleFAQ = (index) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
 
-.faq-question {
-  padding: 15px;
-  cursor: pointer;
-  background-color: #e6e6e6;
-  font-weight: bold;
-  border: none;
-  width: 100%;
-  text-align: left;
-  outline: none;
-  transition: background 0.3s;
-}
+  return (
+    <div className="faq-container">
+      <h1>FAQ’s of Standard Chartered Bank Credit Card</h1>
+      {faqs.map((faq, index) => (
+        <div className="faq-item" key={index}>
+          <button className="faq-question" onClick={() => toggleFAQ(index)}>
+            {faq.question}
+          </button>
+          <div className={`faq-answer ${openIndex === index ? "open" : ""}`}>
+            <p>{faq.answer}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
 
-.faq-question:hover {
-  background-color: #d9d9d9;
-}
-
-.faq-answer {
-  max-height: 0;
-  overflow: hidden;
-  padding: 0 15px;
-  background-color: #f9f9f9;
-  transition: max-height 0.3s ease, padding 0.3s ease;
-}
-
-.faq-answer.open {
-  max-height: 200px;
-  padding: 15px;
-}
+export default Faq;
