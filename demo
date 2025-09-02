@@ -1,51 +1,93 @@
-if (mode === "signup") {
-  if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-    setError("All fields are required.");
-    return;
-  }
-  if (formData.password !== formData.confirmPassword) {
-    setError("Passwords do not match.");
-    return;
-  }
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import "./SalesApplicationsTable.css";
 
-  try {
-    const response = await UnifiedLoginModalService.signupCustomer({
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-    });
-    console.log("signup response:", response);
+const API_BASE_URL = "http://localhost:8080"; // backend URL
 
-    setSuccess("Account created successfully! Please login.");
-    setMode("customer");
-    resetForm();
-  } catch (err) {
-    setError(err.error || "Signup failed.");
-  }
-  return;
+function SalesApplicationsTable() {
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const token = localStorage.getItem("token"); // JWT from login
+        const response = await axios.get(`${API_BASE_URL}/applications`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setApplications(response.data);
+      } catch (err) {
+        setError("Failed to load applications.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchApplications();
+  }, []);
+
+  return (
+    <div className="sc-container">
+      <h2 className="sc-title">Customer Credit Card Applications</h2>
+
+      {loading && <p className="sc-loading">Loading...</p>}
+      {error && <p className="sc-error">{error}</p>}
+
+      {!loading && applications.length > 0 && (
+        <div className="sc-table-wrapper">
+          <table className="sc-table">
+            <thead>
+              <tr>
+                <th>Application ID</th>
+                <th>Customer Name</th>
+                <th>DOB</th>
+                <th>PAN / ID</th>
+                <th>Email</th>
+                <th>Contact</th>
+                <th>Employment Type</th>
+                <th>Income</th>
+                <th>Credit Score</th>
+                <th>Product</th>
+                <th>Status</th>
+                <th>Assigned Limit</th>
+                <th>Card Last 4</th>
+                <th>Approval Date</th>
+                <th>Processed By</th>
+              </tr>
+            </thead>
+            <tbody>
+              {applications.map((app) => (
+                <tr key={app.applicationId}>
+                  <td>{app.applicationId}</td>
+                  <td>{app.name}</td>
+                  <td>{app.dob}</td>
+                  <td>{app.panNumber}</td>
+                  <td>{app.email}</td>
+                  <td>{app.contactNumber}</td>
+                  <td>{app.employmentType}</td>
+                  <td>{app.monthlyIncome}</td>
+                  <td>{app.creditScore}</td>
+                  <td>{app.productType}</td>
+                  <td className={`status ${app.status.toLowerCase()}`}>
+                    {app.status}
+                  </td>
+                  <td>{app.assignedLimit}</td>
+                  <td>{app.cardLast4}</td>
+                  <td>{app.approvalDate}</td>
+                  <td>{app.processedBy}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {!loading && applications.length === 0 && (
+        <p className="sc-empty">No applications found.</p>
+      )}
+    </div>
+  );
 }
 
-if (mode === "customer") {
-  if (!formData.username || !formData.password) {
-    setError("Both email and password are required.");
-    return;
-  }
-
-  try {
-    const response = await UnifiedLoginModalService.loginCustomer({
-      username: formData.username,
-      password: formData.password,
-    });
-    console.log("customer login response:", response);
-
-    setSuccess("Customer login successful!");
-    localStorage.setItem("token", response.token); // save JWT
-    setTimeout(() => {
-      onHide();
-      navigate("/CreditCardApplicationForm");
-    }, 1500);
-  } catch (err) {
-    setError(err.error || "Invalid email or password.");
-  }
-  return;
-}
+export default SalesApplicationsTable;
