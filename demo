@@ -1,54 +1,51 @@
-import axios from "axios";
-
-const API_BASE_URL = "http://localhost:8080";
-
-// ===== CUSTOMER SIGNUP =====
-const signupCustomer = async (customerData) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/customer/signup`, {
-      name: customerData.name,
-      email: customerData.email,
-      password: customerData.password,
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Signup failed:", error.response ? error.response.data : error.message);
-    throw error.response?.data || { error: "Signup failed" };
+if (mode === "signup") {
+  if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+    setError("All fields are required.");
+    return;
   }
-};
-
-// ===== CUSTOMER LOGIN =====
-const loginCustomer = async (credentials) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/customer/login`, {
-      email: credentials.username,  // username is actually email
-      password: credentials.password,
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Login failed:", error.response ? error.response.data : error.message);
-    throw error.response?.data || { error: "Login failed" };
+  if (formData.password !== formData.confirmPassword) {
+    setError("Passwords do not match.");
+    return;
   }
-};
 
-// ===== SALES LOGIN (already done) =====
-const loginSalesUser = async (credentials) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/salesuser/login`, {
-      userId: credentials.userId,
-      password: credentials.password,
+    const response = await UnifiedLoginModalService.signupCustomer({
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
     });
-    return response.data;
-  } catch (error) {
-    console.error("Login failed:", error.response ? error.response.data : error.message);
-    throw error.response?.data || { error: "Login failed" };
+    console.log("signup response:", response);
+
+    setSuccess("Account created successfully! Please login.");
+    setMode("customer");
+    resetForm();
+  } catch (err) {
+    setError(err.error || "Signup failed.");
   }
-};
+  return;
+}
 
-const UnifiedLoginModalService = {
-  signupCustomer,
-  loginCustomer,
-  loginSalesUser,
-};
+if (mode === "customer") {
+  if (!formData.username || !formData.password) {
+    setError("Both email and password are required.");
+    return;
+  }
 
-export default UnifiedLoginModalService;
+  try {
+    const response = await UnifiedLoginModalService.loginCustomer({
+      username: formData.username,
+      password: formData.password,
+    });
+    console.log("customer login response:", response);
+
+    setSuccess("Customer login successful!");
+    localStorage.setItem("token", response.token); // save JWT
+    setTimeout(() => {
+      onHide();
+      navigate("/CreditCardApplicationForm");
+    }, 1500);
+  } catch (err) {
+    setError(err.error || "Invalid email or password.");
+  }
+  return;
+}
