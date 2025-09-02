@@ -1,93 +1,70 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import "./SalesApplicationsTable.css";
-
-const API_BASE_URL = "http://localhost:8080"; // backend URL
-
-function SalesApplicationsTable() {
-  const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        const token = localStorage.getItem("token"); // JWT from login
-        const response = await axios.get(`${API_BASE_URL}/applications`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setApplications(response.data);
-      } catch (err) {
-        setError("Failed to load applications.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchApplications();
-  }, []);
-
-  return (
-    <div className="sc-container">
-      <h2 className="sc-title">Customer Credit Card Applications</h2>
-
-      {loading && <p className="sc-loading">Loading...</p>}
-      {error && <p className="sc-error">{error}</p>}
-
-      {!loading && applications.length > 0 && (
-        <div className="sc-table-wrapper">
-          <table className="sc-table">
-            <thead>
-              <tr>
-                <th>Application ID</th>
-                <th>Customer Name</th>
-                <th>DOB</th>
-                <th>PAN / ID</th>
-                <th>Email</th>
-                <th>Contact</th>
-                <th>Employment Type</th>
-                <th>Income</th>
-                <th>Credit Score</th>
-                <th>Product</th>
-                <th>Status</th>
-                <th>Assigned Limit</th>
-                <th>Card Last 4</th>
-                <th>Approval Date</th>
-                <th>Processed By</th>
-              </tr>
-            </thead>
-            <tbody>
-              {applications.map((app) => (
-                <tr key={app.applicationId}>
-                  <td>{app.applicationId}</td>
-                  <td>{app.name}</td>
-                  <td>{app.dob}</td>
-                  <td>{app.panNumber}</td>
-                  <td>{app.email}</td>
-                  <td>{app.contactNumber}</td>
-                  <td>{app.employmentType}</td>
-                  <td>{app.monthlyIncome}</td>
-                  <td>{app.creditScore}</td>
-                  <td>{app.productType}</td>
-                  <td className={`status ${app.status.toLowerCase()}`}>
-                    {app.status}
-                  </td>
-                  <td>{app.assignedLimit}</td>
-                  <td>{app.cardLast4}</td>
-                  <td>{app.approvalDate}</td>
-                  <td>{app.processedBy}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {!loading && applications.length === 0 && (
-        <p className="sc-empty">No applications found.</p>
-      )}
-    </div>
-  );
+.sc-container {
+  padding: 20px;
+  background: #f5faff;
+  min-height: 100vh;
 }
 
-export default SalesApplicationsTable;
+.sc-title {
+  text-align: center;
+  color: #0066a1; /* Standard Chartered Blue */
+  margin-bottom: 20px;
+}
+
+.sc-loading,
+.sc-error,
+.sc-empty {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #0066a1;
+}
+
+.sc-error {
+  color: #d9534f;
+}
+
+.sc-table-wrapper {
+  overflow-x: auto;
+}
+
+.sc-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0px 2px 8px rgba(0, 102, 161, 0.15);
+}
+
+.sc-table th {
+  background: #0066a1; /* Blue Header */
+  color: white;
+  padding: 10px;
+  text-align: left;
+}
+
+.sc-table td {
+  padding: 10px;
+  border-bottom: 1px solid #d0e6f4;
+}
+
+.sc-table tr:nth-child(even) {
+  background: #e6f5f1; /* Light Green Row */
+}
+
+.sc-table tr:hover {
+  background: #c1e4dc; /* Highlight on Hover */
+}
+
+/* Status Colors */
+.status.approved {
+  color: #1b8a5a; /* Green */
+  font-weight: bold;
+}
+
+.status.rejected {
+  color: #d9534f; /* Red */
+  font-weight: bold;
+}
+
+.status.pending {
+  color: #f0ad4e; /* Orange */
+  font-weight: bold;
+}
