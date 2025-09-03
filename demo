@@ -1,57 +1,62 @@
-<div className="help-container">
+<div className="services-container">
   {/* Hero Section */}
-  <section className="help-hero text-center p-5" style={{ backgroundColor: "#0033A0", color: "white" }}>
-    <h1 className="fw-bold">How Can We Help You?</h1>
+  <section className="services-hero text-center p-5" style={{ backgroundColor: "#0033A0", color: "white" }}>
+    <h1 className="fw-bold">Banking Services Tailored for You</h1>
     <p className="lead" style={{ color: "#cce0ff" }}>
-      Find quick answers, contact our support team, or explore helpful resources to manage your banking needs.
+      From everyday banking to premium financial solutions — we provide services that make managing your money simple, secure, and rewarding.
     </p>
   </section>
 
-  {/* Key Help Areas */}
-  <section className="help-areas p-5 bg-light">
-    <h2 className="text-center fw-semibold mb-5 text-primary">Popular Help Topics</h2>
+  {/* Key Services */}
+  <section className="services-highlights p-5 bg-light">
+    <h2 className="text-center fw-semibold mb-5 text-primary">Our Core Services</h2>
     <div className="row text-center">
-      <div className="col-md-4 mb-4">
-        <i className="fa-solid fa-circle-question fa-2x mb-3" style={{ color: "#00A49A" }}></i>
-        <h4 className="fw-bold">FAQs</h4>
-        <p className="text-muted">Get instant answers to commonly asked questions on cards, payments, and accounts.</p>
+      <div className="col-md-3 mb-4">
+        <i className="fa-solid fa-building-columns fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h4 className="fw-bold">Personal Banking</h4>
+        <p className="text-muted">Savings, current accounts, and debit cards to meet your daily banking needs.</p>
       </div>
-      <div className="col-md-4 mb-4">
-        <i className="fa-solid fa-headset fa-2x mb-3" style={{ color: "#0095DA" }}></i>
-        <h4 className="fw-bold">Customer Support</h4>
-        <p className="text-muted">Reach our 24/7 helpline or chat with an agent for personalized assistance.</p>
+      <div className="col-md-3 mb-4">
+        <i className="fa-solid fa-briefcase fa-2x mb-3" style={{ color: "#0095DA" }}></i>
+        <h4 className="fw-bold">Business Banking</h4>
+        <p className="text-muted">Tailored financial solutions to support SMEs, corporates, and entrepreneurs.</p>
       </div>
-      <div className="col-md-4 mb-4">
-        <i className="fa-solid fa-file-contract fa-2x mb-3" style={{ color: "#0033A0" }}></i>
-        <h4 className="fw-bold">Guides & Policies</h4>
-        <p className="text-muted">Step-by-step application guides and detailed policy documents to keep you informed.</p>
+      <div className="col-md-3 mb-4">
+        <i className="fa-solid fa-sack-dollar fa-2x mb-3" style={{ color: "#0033A0" }}></i>
+        <h4 className="fw-bold">Loans & Credit</h4>
+        <p className="text-muted">Home loans, personal loans, and credit facilities designed for your goals.</p>
+      </div>
+      <div className="col-md-3 mb-4">
+        <i className="fa-solid fa-globe fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h4 className="fw-bold">Global Banking</h4>
+        <p className="text-muted">Seamless international transfers, forex services, and global wealth solutions.</p>
       </div>
     </div>
   </section>
 
-  {/* Why Choose Our Support */}
-  <section className="why-support p-5 bg-white">
-    <h2 className="text-center fw-semibold mb-4 text-primary">Why Our Support Stands Out</h2>
+  {/* Why Choose Our Services */}
+  <section className="why-services p-5 bg-white">
+    <h2 className="text-center fw-semibold mb-4 text-primary">Why Choose Our Services?</h2>
     <div className="row text-center">
       <div className="col-md-3 mb-4">
-        <i className="fa-solid fa-clock fa-2x mb-3" style={{ color: "#00A49A" }}></i>
-        <h5 className="fw-bold">24/7 Assistance</h5>
-        <p className="text-muted">Round-the-clock availability through phone, email, and live chat.</p>
+        <i className="fa-solid fa-lock fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h5 className="fw-bold">Secure & Trusted</h5>
+        <p className="text-muted">Bank with confidence backed by global security standards and compliance.</p>
       </div>
       <div className="col-md-3 mb-4">
-        <i className="fa-solid fa-language fa-2x mb-3" style={{ color: "#0095DA" }}></i>
-        <h5 className="fw-bold">Multi-Language Support</h5>
-        <p className="text-muted">Talk to our experts in the language you’re most comfortable with.</p>
+        <i className="fa-solid fa-mobile-screen fa-2x mb-3" style={{ color: "#0095DA" }}></i>
+        <h5 className="fw-bold">Digital First</h5>
+        <p className="text-muted">Mobile and online banking designed for convenience, speed, and reliability.</p>
       </div>
       <div className="col-md-3 mb-4">
-        <i className="fa-solid fa-bolt fa-2x mb-3" style={{ color: "#0033A0" }}></i>
-        <h5 className="fw-bold">Quick Resolutions</h5>
-        <p className="text-muted">Efficient ticketing system ensures faster turnaround times.</p>
+        <i className="fa-solid fa-people-group fa-2x mb-3" style={{ color: "#0033A0" }}></i>
+        <h5 className="fw-bold">Customer-Centric</h5>
+        <p className="text-muted">Personalized services with dedicated relationship managers.</p>
       </div>
       <div className="col-md-3 mb-4">
-        <i className="fa-solid fa-mobile-screen-button fa-2x mb-3" style={{ color: "#00A49A" }}></i>
-        <h5 className="fw-bold">Mobile Banking Help</h5>
-        <p className="text-muted">Dedicated support for app users to resolve issues on the go.</p>
+        <i className="fa-solid fa-handshake fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h5 className="fw-bold">Partnership Approach</h5>
+        <p className="text-muted">We work with you to achieve your personal and business financial goals.</p>
       </div>
     </div>
   </section>
@@ -60,28 +65,28 @@
   <section className="stats-section p-5 text-center" style={{ backgroundColor: "#F4F8FB" }}>
     <div className="row">
       <div className="col-md-4">
-        <h2 className="fw-bold" style={{ color: "#0033A0" }}>95%</h2>
-        <p className="text-muted">Queries Resolved on First Contact</p>
+        <h2 className="fw-bold" style={{ color: "#0033A0" }}>50+</h2>
+        <p className="text-muted">Years of Banking Excellence</p>
       </div>
       <div className="col-md-4">
-        <h2 className="fw-bold" style={{ color: "#00A49A" }}>10,000+</h2>
-        <p className="text-muted">Daily Customer Interactions</p>
+        <h2 className="fw-bold" style={{ color: "#00A49A" }}>10M+</h2>
+        <p className="text-muted">Customers Served Globally</p>
       </div>
       <div className="col-md-4">
-        <h2 className="fw-bold" style={{ color: "#0095DA" }}>4.8/5</h2>
-        <p className="text-muted">Average Customer Satisfaction Score</p>
+        <h2 className="fw-bold" style={{ color: "#0095DA" }}>100+</h2>
+        <p className="text-muted">Countries With Our Presence</p>
       </div>
     </div>
   </section>
 
   {/* Call to Action */}
   <section className="cta text-center p-5" style={{ backgroundColor: "#0033A0", color: "white" }}>
-    <h2 className="fw-semibold">Need Assistance Right Away?</h2>
+    <h2 className="fw-semibold">Experience Seamless Banking Today</h2>
     <p className="mb-4">
-      Our dedicated support team is here to help you 24/7 with all your banking needs.
+      Explore our wide range of financial services designed to simplify your everyday and long-term banking needs.
     </p>
     <button className="btn btn-success btn-lg">
-      Contact Support
+      Explore Services
     </button>
   </section>
 </div>
