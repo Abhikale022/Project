@@ -1,119 +1,89 @@
-import React, { useState } from "react";
-import "./Home.css";
-import Navbar from "./Navbar";
-import Carousel from "./Carousel";
-import QuickActions from "./QuickActions";
-import UnifiedLoginModal from "./UnifiedLoginModal";
-import Faq from "./Faq";
-
- 
-const HomePage = () => {
-  const navItems = ["About Us", "Invest", "Offers", "Help", "Services"];
-  const [showModal, setShowModal] = useState(false);
- 
-  return (
-<>
-      {/* Navbar with login handler */}
-<Navbar
-        
-        navItems={navItems}
-        onLoginClick={() => setShowModal(true)}
-      />
- 
-      {/* Main Content */}
-<Carousel />
-<QuickActions
-        title="Quick Actions"
-        subtitle="Everything you need to manage your credit cards and banking services in one place"
-      />
- 
-      {/* Unified Login Modal */}
-<Faq />
-<UnifiedLoginModal show={showModal} onHide={() => setShowModal(false)} />
-</>
-  );
-};
- 
-export default HomePage;
-
-
+// Quick Actions Component
 import React from "react";
-import platinumcard from "../assets/platinum.png";
-import silvercard from "../assets/silver.png";
-import goldcard from "../assets/gold.png";
-import "./CreditCardComparison.css"; // <-- import css
-import Navbar from "./Navbar";
+import { useNavigate } from "react-router-dom";
+import CreditCardComparison from "./CreditCardComparison";
 
-function CreditCardComparison() {
-  const cards = [
-    {
-      name: "Silver Card",
-      fee: "₹500 Annual Fee",
-      image: silvercard,
-      features: [
-        "1 point per ₹200 spent",
-        "No airport lounge access",
-        "Fuel surcharge waiver up to ₹100 / month",
-        "0.5% cashback on groceries",
-        "Accidental Insurance ₹1 Lakh",
-        "Welcome Gift worth ₹250",
-      ],
-    },
-    {
-      name: "Gold Card",
-      fee: "₹1,000 Annual Fee",
-      image: goldcard,
-      features: [
-        "2 points per ₹150 spent",
-        "2 free airport lounge visits / year",
-        "Fuel surcharge waiver up to ₹250 / month",
-        "1% cashback on groceries & dining",
-        "Travel Insurance ₹5 Lakhs",
-        "Welcome Gift worth ₹1,000",
-      ],
-    },
-    {
-      name: "Platinum Card",
-      fee: "₹2,500 Annual Fee",
-      image: platinumcard,
-      features: [
-        "3 points per ₹100 spent",
-        "6 free airport lounge visits / year",
-        "Unlimited fuel surcharge waiver",
-        "2% cashback on groceries, dining & travel",
-        "Comprehensive Insurance ₹20 Lakhs",
-        "Welcome Gift worth ₹3,000",
-      ],
-    },
-  ];
 
+const quickActions = [
+  {
+    icon: "fa-solid fa-clipboard-list",
+    title: "Apply Now",
+    description: "Quick and easy credit card application process",
+    buttonText: "Start Application",
+    iconClass: "quick-clipboard",
+  },
+  {
+    icon: "fa-solid fa-question",
+    title: "How to Apply",
+    description: "Step-by-step guide to credit card applications",
+    buttonText: "View Guide",
+    iconClass: "quick-question",
+  },
+  {
+    icon: "fa-solid fa-credit-card",
+    title: "Types of Credit Cards",
+    description: "Explore our complete range of credit cards",
+    buttonText: "Compare Cards",
+    iconClass: "quick-card",
+  },
+];
+
+const QuickActions = ({ title, subtitle }) => {
   return (
-    <>
-    <Navbar
-        
-        navItems={navItems}
-        onLoginClick={() => setShowModal(true)}
-      />
-    <div className="comparison-container">
-      <h2 className="title">Compare Our Credit Cards</h2>
-      <div className="cards-row">
-        {cards.map((card, index) => (
-          <div key={index} className="card">
-            <img src={card.image} alt={card.name} className="card-image" />
-            <h3>{card.name}</h3>
-            <p className="fee">{card.fee}</p>
-            <ul>
-              {card.features.map((feature, i) => (
-                <li key={i}> {feature}</li>
-              ))}
-            </ul>
-         
+    <div className="container mt-5 mb-5">
+      <h3 className="mb-4 fw-semibold">{title}</h3>
+      <p className="mb-4 text-muted" style={{ marginTop: "-14px" }}>
+        {subtitle}
+      </p>
+
+      <div className="row g-1 quick-actions">
+        {quickActions.map((action, index) => (
+          <div key={index} className="col-8 col-sm-8 col-md-3">
+            <QuickActionCard
+              icon={action.icon}
+              title={action.title}
+              description={action.description}
+              buttonText={action.buttonText}
+              iconClass={action.iconClass}
+            />
           </div>
         ))}
       </div>
     </div>
-    </>
   );
-}
+};
 
-export default CreditCardComparison;
+export default QuickActions;
+
+const QuickActionCard = ({
+  icon,
+  title,
+  description,
+  buttonText,
+  iconClass,
+}) => {
+  const navigate = useNavigate();
+
+  // handle click navigation
+  const handleClick = () => {
+    if (buttonText === "Compare Cards") {
+      navigate("/CreditCardComparison"); // ✅ your route
+    }
+  };
+
+  return (
+    <div className="card h-100 p-3 text-center temp-class">
+      <div className={`quick-icon-bg ${iconClass}`}>
+        <i className={icon}></i>
+      </div>
+      <h5 className="card-title">{title}</h5>
+      <p className="card-text">{description}</p>
+      <button
+        className="btn btn-outline-primary btn-sm"
+        onClick={handleClick}
+      >
+        {buttonText}
+      </button>
+    </div>
+  );
+};
