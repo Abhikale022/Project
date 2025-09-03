@@ -1,9 +1,9 @@
-<div className="about-container">
+<div className="invest-container">
   {/* Hero Section */}
-  <section className="about-hero text-center p-5" style={{ backgroundColor: "#0033A0", color: "white" }}>
-    <h1 className="fw-bold">About Us</h1>
+  <section className="invest-hero text-center p-5" style={{ backgroundColor: "#0033A0", color: "white" }}>
+    <h1 className="fw-bold">Invest With Confidence</h1>
     <p className="lead" style={{ color: "#cce0ff" }}>
-      Delivering trusted and transparent credit card solutions for a stronger financial future.
+      Smart investment solutions designed to help you grow, protect, and manage your wealth.
     </p>
   </section>
 
@@ -11,12 +11,12 @@
   <section className="mission-vision d-flex flex-wrap p-5 bg-light">
     <div className="col-md-6 pe-4">
       <h2 className="fw-semibold text-primary">
-        <i className="fa-solid fa-bullseye text-success me-2"></i> Our Mission
+        <i className="fa-solid fa-chart-line text-success me-2"></i> Our Mission
       </h2>
       <p>
-        Our mission is to empower individuals by making credit card origination 
-        simple, secure, and transparent. We strive to provide access to the 
-        right financial products for every lifestyle and need.
+        To empower individuals and businesses with access to secure, transparent, 
+        and high-performing investment opportunities that align with long-term 
+        financial goals.
       </p>
     </div>
     <div className="col-md-6 ps-4">
@@ -24,36 +24,36 @@
         <i className="fa-solid fa-lightbulb text-info me-2"></i> Our Vision
       </h2>
       <p>
-        We envision a future where credit card access is inclusive and reliable,
-        helping customers achieve their financial aspirations while maintaining 
-        the highest standards of security and trust.
+        To create a trusted investment ecosystem where customers can grow 
+        their wealth confidently, supported by expert guidance and world-class 
+        financial tools.
       </p>
     </div>
   </section>
 
   {/* Why Choose Us */}
   <section className="why-us p-5 bg-white">
-    <h2 className="text-center fw-semibold mb-4 text-primary">Why Choose Us</h2>
+    <h2 className="text-center fw-semibold mb-4 text-primary">Why Invest With Us</h2>
     <div className="row text-center">
       <div className="col-md-3 mb-4">
-        <i className="fa-solid fa-bolt fa-2x mb-3" style={{ color: "#00A49A" }}></i>
-        <h4 className="fw-bold">Fast Approvals</h4>
-        <p className="text-muted">Quick processing with minimal paperwork and maximum convenience.</p>
+        <i className="fa-solid fa-piggy-bank fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h4 className="fw-bold">Diverse Products</h4>
+        <p className="text-muted">Mutual funds, fixed deposits, bonds, and equity investments tailored to your needs.</p>
       </div>
       <div className="col-md-3 mb-4">
-        <i className="fa-solid fa-shield-halved fa-2x mb-3" style={{ color: "#0033A0" }}></i>
-        <h4 className="fw-bold">Secure Process</h4>
-        <p className="text-muted">Bank-grade encryption with compliance to global security standards.</p>
+        <i className="fa-solid fa-lock fa-2x mb-3" style={{ color: "#0033A0" }}></i>
+        <h4 className="fw-bold">Secure Platform</h4>
+        <p className="text-muted">Transactions backed by bank-grade security and regulatory compliance.</p>
       </div>
       <div className="col-md-3 mb-4">
-        <i className="fa-solid fa-credit-card fa-2x mb-3" style={{ color: "#0095DA" }}></i>
-        <h4 className="fw-bold">Diverse Options</h4>
-        <p className="text-muted">From entry-level to premium, find a card designed for your lifestyle.</p>
+        <i className="fa-solid fa-user-tie fa-2x mb-3" style={{ color: "#0095DA" }}></i>
+        <h4 className="fw-bold">Expert Guidance</h4>
+        <p className="text-muted">Investment advisors and research-driven insights to guide smarter decisions.</p>
       </div>
       <div className="col-md-3 mb-4">
-        <i className="fa-solid fa-headset fa-2x mb-3" style={{ color: "#00A49A" }}></i>
-        <h4 className="fw-bold">Dedicated Support</h4>
-        <p className="text-muted">Our team of experts is available to guide you through every step.</p>
+        <i className="fa-solid fa-chart-pie fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h4 className="fw-bold">Tailored Portfolios</h4>
+        <p className="text-muted">Personalized investment strategies based on your risk profile and goals.</p>
       </div>
     </div>
   </section>
@@ -62,28 +62,28 @@
   <section className="stats-section p-5 text-center" style={{ backgroundColor: "#F4F8FB" }}>
     <div className="row">
       <div className="col-md-4">
-        <h2 className="fw-bold" style={{ color: "#0033A0" }}>50,000+</h2>
-        <p className="text-muted">Applications Successfully Processed</p>
+        <h2 className="fw-bold" style={{ color: "#0033A0" }}>₹5,000 Cr+</h2>
+        <p className="text-muted">Assets Under Management</p>
       </div>
       <div className="col-md-4">
-        <h2 className="fw-bold" style={{ color: "#00A49A" }}>100+</h2>
-        <p className="text-muted">Banking & Financial Partnerships</p>
+        <h2 className="fw-bold" style={{ color: "#00A49A" }}>200,000+</h2>
+        <p className="text-muted">Satisfied Investors</p>
       </div>
       <div className="col-md-4">
-        <h2 className="fw-bold" style={{ color: "#0095DA" }}>5+ Years</h2>
-        <p className="text-muted">Trusted Service in Credit Card Origination</p>
+        <h2 className="fw-bold" style={{ color: "#0095DA" }}>15+ Years</h2>
+        <p className="text-muted">Experience in Wealth Management</p>
       </div>
     </div>
   </section>
 
   {/* Call to Action */}
   <section className="cta text-center p-5" style={{ backgroundColor: "#0033A0", color: "white" }}>
-    <h2 className="fw-semibold">Take the Next Step in Your Financial Journey</h2>
+    <h2 className="fw-semibold">Start Growing Your Wealth Today</h2>
     <p className="mb-4">
-      Explore our credit card offerings and apply securely in just a few clicks.
+      Explore our investment solutions and take the first step towards securing your financial future.
     </p>
     <button className="btn btn-success btn-lg">
-      Compare & Apply Now
+      Explore Investment Options
     </button>
   </section>
 </div>
