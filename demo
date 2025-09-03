@@ -1,67 +1,81 @@
 <div className="about-container">
   {/* Hero Section */}
-  <section className="about-hero text-center p-5">
-    <h1>About <span className="highlight">CardEase</span></h1>
-    <p className="lead">
-      Your trusted partner in simplifying credit card applications and making financial growth accessible to everyone.
+  <section className="about-hero text-center p-5 bg-light">
+    <h1 className="fw-bold">About Us</h1>
+    <p className="lead text-muted">
+      Empowering customers with simple, transparent, and reliable credit card solutions.
     </p>
   </section>
 
   {/* Mission & Vision */}
-  <section className="mission-vision d-flex p-5">
-    <div className="mission col">
-      <h2>🎯 Our Mission</h2>
+  <section className="mission-vision d-flex flex-wrap p-5">
+    <div className="col-md-6 pe-4">
+      <h2 className="fw-semibold">Our Mission</h2>
       <p>
-        To revolutionize the credit card origination process by providing 
-        customers with <strong>transparent, fast, and secure</strong> 
-        access to a wide range of credit cards tailored to their needs.
+        Our mission is to simplify the credit card origination process by offering
+        customers a seamless, secure, and transparent platform to explore and apply
+        for credit cards that best suit their financial needs and lifestyle.
       </p>
     </div>
-    <div className="vision col">
-      <h2>🚀 Our Vision</h2>
+    <div className="col-md-6 ps-4">
+      <h2 className="fw-semibold">Our Vision</h2>
       <p>
-        We envision a future where financial services are <em>hassle-free, 
-        inclusive, and empowering</em>, helping every individual unlock 
-        their true financial potential.
+        We aim to build long-term financial trust by creating a customer-first ecosystem,
+        where credit card access is streamlined, inclusive, and tailored to help every
+        individual achieve their financial goals with confidence.
       </p>
     </div>
   </section>
 
   {/* Why Choose Us */}
-  <section className="why-us p-5">
-    <h2 className="text-center mb-4">💡 Why Choose Us?</h2>
+  <section className="why-us p-5 bg-white">
+    <h2 className="text-center fw-semibold mb-4">Why Choose Us</h2>
     <div className="row text-center">
-      <div className="col">
-        <i className="fa-solid fa-bolt fa-2x text-primary"></i>
-        <h4>Instant Approvals</h4>
-        <p>Apply and get approvals in just a few clicks.</p>
+      <div className="col-md-3 mb-4">
+        <h4 className="fw-bold">Fast Approvals</h4>
+        <p className="text-muted">Accelerated processing with minimal paperwork and maximum convenience.</p>
       </div>
-      <div className="col">
-        <i className="fa-solid fa-shield-halved fa-2x text-success"></i>
-        <h4>Secure Process</h4>
-        <p>Your data is encrypted and 100% safe with us.</p>
+      <div className="col-md-3 mb-4">
+        <h4 className="fw-bold">Secure Transactions</h4>
+        <p className="text-muted">Advanced encryption and compliance with banking security standards.</p>
       </div>
-      <div className="col">
-        <i className="fa-solid fa-credit-card fa-2x text-warning"></i>
-        <h4>Variety of Cards</h4>
-        <p>From Silver to Platinum, explore cards that fit your lifestyle.</p>
+      <div className="col-md-3 mb-4">
+        <h4 className="fw-bold">Comprehensive Options</h4>
+        <p className="text-muted">From entry-level to premium cards, we offer solutions for every customer profile.</p>
       </div>
-      <div className="col">
-        <i className="fa-solid fa-headset fa-2x text-danger"></i>
-        <h4>24/7 Support</h4>
-        <p>Our experts are here to assist you anytime.</p>
+      <div className="col-md-3 mb-4">
+        <h4 className="fw-bold">Dedicated Support</h4>
+        <p className="text-muted">Experienced representatives available to guide you at every step.</p>
       </div>
     </div>
   </section>
 
-  {/* Interactive Call to Action */}
-  <section className="cta text-center p-5 bg-light">
-    <h2>Ready to Get Started?</h2>
-    <p>
-      Join thousands of satisfied customers who trust us for their financial journey.
+  {/* Achievements / Stats */}
+  <section className="stats-section p-5 bg-light text-center">
+    <div className="row">
+      <div className="col-md-4">
+        <h2 className="fw-bold">50,000+</h2>
+        <p className="text-muted">Successful Applications Processed</p>
+      </div>
+      <div className="col-md-4">
+        <h2 className="fw-bold">100+</h2>
+        <p className="text-muted">Banking & Financial Partners</p>
+      </div>
+      <div className="col-md-4">
+        <h2 className="fw-bold">5 Years+</h2>
+        <p className="text-muted">Trusted Service in Credit Card Origination</p>
+      </div>
+    </div>
+  </section>
+
+  {/* Call to Action */}
+  <section className="cta text-center p-5 bg-primary text-white">
+    <h2 className="fw-semibold">Take the Next Step in Your Financial Journey</h2>
+    <p className="mb-4">
+      Explore our wide range of credit card options and apply with confidence today.
     </p>
-    <button className="btn btn-primary btn-lg mt-3">
-      Apply for Your Card Today
+    <button className="btn btn-light btn-lg">
+      Compare & Apply Now
     </button>
   </section>
 </div>
