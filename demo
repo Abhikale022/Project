@@ -1,92 +1,390 @@
-<div className="services-container">
-  {/* Hero Section */}
-  <section className="services-hero text-center p-5" style={{ backgroundColor: "#0033A0", color: "white" }}>
-    <h1 className="fw-bold">Banking Services Tailored for You</h1>
-    <p className="lead" style={{ color: "#cce0ff" }}>
-      From everyday banking to premium financial solutions — we provide services that make managing your money simple, secure, and rewarding.
-    </p>
-  </section>
+package com.scb.creditcardorigination.config;
 
-  {/* Key Services */}
-  <section className="services-highlights p-5 bg-light">
-    <h2 className="text-center fw-semibold mb-5 text-primary">Our Core Services</h2>
-    <div className="row text-center">
-      <div className="col-md-3 mb-4">
-        <i className="fa-solid fa-building-columns fa-2x mb-3" style={{ color: "#00A49A" }}></i>
-        <h4 className="fw-bold">Personal Banking</h4>
-        <p className="text-muted">Savings, current accounts, and debit cards to meet your daily banking needs.</p>
-      </div>
-      <div className="col-md-3 mb-4">
-        <i className="fa-solid fa-briefcase fa-2x mb-3" style={{ color: "#0095DA" }}></i>
-        <h4 className="fw-bold">Business Banking</h4>
-        <p className="text-muted">Tailored financial solutions to support SMEs, corporates, and entrepreneurs.</p>
-      </div>
-      <div className="col-md-3 mb-4">
-        <i className="fa-solid fa-sack-dollar fa-2x mb-3" style={{ color: "#0033A0" }}></i>
-        <h4 className="fw-bold">Loans & Credit</h4>
-        <p className="text-muted">Home loans, personal loans, and credit facilities designed for your goals.</p>
-      </div>
-      <div className="col-md-3 mb-4">
-        <i className="fa-solid fa-globe fa-2x mb-3" style={{ color: "#00A49A" }}></i>
-        <h4 className="fw-bold">Global Banking</h4>
-        <p className="text-muted">Seamless international transfers, forex services, and global wealth solutions.</p>
-      </div>
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.*;
+
+@Configuration
+public class CorsConfig implements WebMvcConfigurer {
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:3000")
+                .allowedMethods("*")
+                .allowedHeaders("*");
+    }
+}
+
+package com.scb.creditcardorigination.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.*;
+
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:uploads/");
+    }
+}
+
+package com.scb.creditcardorigination.xfeature.controller;
+
+import com.scb.creditcardorigination.xfeature.model.Document;
+import com.scb.creditcardorigination.xfeature.service.DocumentService;
+import com.scb.creditcardorigination.xfeature.service.FileStorageService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+@CrossOrigin(origins = "https://localhost:3000")
+@RestController
+@RequestMapping("/documents")
+public class DocumentController {
+
+    @Autowired
+    private DocumentService documentService;
+
+    @Autowired
+    private FileStorageService fileStorageService;
+
+    @GetMapping
+    public List<Document> getAllDocuments() {
+        return documentService.getAllDocuments();
+    }
+
+    @GetMapping("/{id}")
+    public Document getDocumentById(@PathVariable Integer id) {
+        return documentService.getDocumentById(id);
+    }
+
+    @PostMapping
+
+    public Document createDocument(@RequestParam Integer applicationId,
+                                   @RequestParam String documentName,
+                                   @RequestParam String documentType,
+                                   @RequestPart("file") MultipartFile file) {
+        Document doc = new Document();
+        doc.setApplicationId(applicationId);
+        doc.setDocumentName(documentName);
+        doc.setDocumentType(documentType);
+        String filePath = fileStorageService.storeFile(file);
+        doc.setFileUrl(filePath);
+        return documentService.createDocument(doc);
+    }
+
+    @PutMapping("/{id}")
+    public Document updateDocument(@PathVariable Integer id,
+                                   @RequestBody Document doc) {
+        return documentService.updateDocument(id, doc);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteDocument(@PathVariable Integer id) {
+        documentService.deleteDocument(id);
+        return ResponseEntity.ok().build();
+    }
+}
+
+
+ package com.scb.creditcardorigination.xfeature.model;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "documents")
+public class Document {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(name = "application_id")
+    private Integer applicationId;
+
+    @Column(name = "document_name")
+    private String documentName;
+
+    @Column(name = "document_type")
+    private String documentType;
+
+    @Column(name = "file_url")
+    private String fileUrl;
+
+    // Constructors (optional)
+    public Document() {}
+
+    public Document(Integer applicationId, String documentName, String documentType, String fileUrl) {
+        this.applicationId = applicationId;
+        this.documentName = documentName;
+        this.documentType = documentType;
+        this.fileUrl = fileUrl;
+    }
+
+    // Getters and Setters
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getApplicationId() {
+        return applicationId;
+    }
+
+    public void setApplicationId(Integer applicationId) {
+        this.applicationId = applicationId;
+    }
+
+    public String getDocumentName() {
+        return documentName;
+    }
+
+    public void setDocumentName(String documentName) {
+        this.documentName = documentName;
+    }
+
+    public String getDocumentType() {
+        return documentType;
+    }
+
+    public void setDocumentType(String documentType) {
+        this.documentType = documentType;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+
+
+}
+package com.scb.creditcardorigination.xfeature.repository;
+
+import com.scb.creditcardorigination.xfeature.model.Document;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface DocumentRepository extends JpaRepository<Document, Integer> {}
+
+package com.scb.creditcardorigination.xfeature.service;
+
+import com.scb.creditcardorigination.xfeature.model.Document;
+import com.scb.creditcardorigination.xfeature.repository.DocumentRepository;
+import com.scb.creditcardorigination.xfeature.exceptionHandling.DocumentNotFoundException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class DocumentService {
+    @Autowired
+    private DocumentRepository repository;
+
+    public List<Document> getAllDocuments() {
+        return repository.findAll();
+    }
+
+    public Document getDocumentById(Integer id) {
+        return repository.findById(id).orElseThrow(() -> new DocumentNotFoundException("Document not found"));
+    }
+
+    public Document createDocument(Document doc) {
+        return repository.save(doc);
+    }
+
+    public Document updateDocument(Integer id, Document doc) {
+        Document existing = repository.findById(id).orElseThrow(() -> new DocumentNotFoundException("Document not found"));
+        existing.setApplicationId(doc.getApplicationId());
+        existing.setDocumentName(doc.getDocumentName());
+        existing.setDocumentType(doc.getDocumentType());
+        existing.setFileUrl(doc.getFileUrl());
+        return repository.save(existing);
+    }
+
+    public void deleteDocument(Integer id) {
+        repository.deleteById(id);
+    }
+}
+
+package com.scb.creditcardorigination.xfeature.service;
+
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.*;
+
+@Service
+public class FileStorageService {
+
+    private final Path uploadDir = Paths.get("uploads");
+
+    public FileStorageService() {
+        try {
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Could not create upload folder!", e);
+        }
+    }
+
+    public String storeFile(MultipartFile file) {
+        String filename = StringUtils.cleanPath(file.getOriginalFilename());
+        Path targetLocation = uploadDir.resolve(filename);
+
+        try {
+            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            // Return URL relative to your server base URL
+            return "/uploads/" + filename;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to store file " + filename, e);
+        }
+    }
+}
+ DocumentManager.js
+import React, { useState, useEffect } from "react";
+import documentService from "./serviceDocuments"; // API service
+import "./DocumentManager.css";
+ 
+function DocumentManager() {
+  const [documents, setDocuments] = useState([]);
+  const [editingIdx, setEditingIdx] = useState(-1);
+  const [editData, setEditData] = useState({});
+  const [creating, setCreating] = useState(false);
+  const [newData, setNewData] = useState({
+    applicationId: "",
+    documentName: "",
+    documentType: "",
+    file: null,
+  });
+ 
+  // ✅ Fetch all documents
+  useEffect(() => {
+    documentService.getAllDocuments().then((res) => {
+      setDocuments(res.data);
+    });
+  }, []);
+ 
+  // ✅ Handle file select
+  const handleFileChange = (e) => {
+    setNewData({ ...newData, file: e.target.files[0] });
+  };
+ 
+  // ✅ Create new document
+  const handleCreate = () => {
+    const formData = new FormData();
+    formData.append(
+      "document",
+      new Blob(
+        [
+          JSON.stringify({
+            applicationId: newData.applicationId,
+            documentName: newData.documentName,
+            documentType: newData.documentType,
+          }),
+        ],
+        { type: "application/json" }
+      )
+    );
+    formData.append("file", newData.file);
+ 
+    documentService.createDocument(formData).then((res) => {
+      setDocuments([...documents, res.data]);
+      setCreating(false);
+      setNewData({
+        applicationId: "",
+        documentName: "",
+        documentType: "",
+        file: null,
+      });
+    });
+  };
+ 
+  return (
+    <div className="document-manager">
+      <h2>Document Manager</h2>
+ 
+      {/* ✅ List all documents */}
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Application ID</th>
+            <th>Document Name</th>
+            <th>Type</th>
+            <th>Preview</th>
+          </tr>
+        </thead>
+        <tbody>
+          {documents.map((doc) => (
+            <tr key={doc.id}>
+              <td>{doc.id}</td>
+              <td>{doc.applicationId}</td>
+              <td>{doc.documentName}</td>
+              <td>{doc.documentType}</td>
+              <td>
+                {/* ✅ FIXED: show backend-served image */}
+                <img
+                  src={doc.fileUrl}
+                  alt={doc.documentName}
+                  width="120"
+                  style={{ border: "1px solid #ccc", borderRadius: "8px" }}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+ 
+      {/* ✅ Create new document */}
+      {creating ? (
+        <div className="create-form">
+          <h3>Create Document</h3>
+          <input
+            type="text"
+            placeholder="Application ID"
+            value={newData.applicationId}
+            onChange={(e) =>
+              setNewData({ ...newData, applicationId: e.target.value })
+            }
+          />
+          <input
+            type="text"
+            placeholder="Document Name"
+            value={newData.documentName}
+            onChange={(e) =>
+              setNewData({ ...newData, documentName: e.target.value })
+            }
+          />
+          <input
+            type="text"
+            placeholder="Document Type"
+            value={newData.documentType}
+            onChange={(e) =>
+              setNewData({ ...newData, documentType: e.target.value })
+            }
+          />
+          <input type="file" onChange={handleFileChange} />
+          <button onClick={handleCreate}>Save</button>
+          <button onClick={() => setCreating(false)}>Cancel</button>
+        </div>
+      ) : (
+        <button onClick={() => setCreating(true)}>+ Add Document</button>
+      )}
     </div>
-  </section>
-
-  {/* Why Choose Our Services */}
-  <section className="why-services p-5 bg-white">
-    <h2 className="text-center fw-semibold mb-4 text-primary">Why Choose Our Services?</h2>
-    <div className="row text-center">
-      <div className="col-md-3 mb-4">
-        <i className="fa-solid fa-lock fa-2x mb-3" style={{ color: "#00A49A" }}></i>
-        <h5 className="fw-bold">Secure & Trusted</h5>
-        <p className="text-muted">Bank with confidence backed by global security standards and compliance.</p>
-      </div>
-      <div className="col-md-3 mb-4">
-        <i className="fa-solid fa-mobile-screen fa-2x mb-3" style={{ color: "#0095DA" }}></i>
-        <h5 className="fw-bold">Digital First</h5>
-        <p className="text-muted">Mobile and online banking designed for convenience, speed, and reliability.</p>
-      </div>
-      <div className="col-md-3 mb-4">
-        <i className="fa-solid fa-people-group fa-2x mb-3" style={{ color: "#0033A0" }}></i>
-        <h5 className="fw-bold">Customer-Centric</h5>
-        <p className="text-muted">Personalized services with dedicated relationship managers.</p>
-      </div>
-      <div className="col-md-3 mb-4">
-        <i className="fa-solid fa-handshake fa-2x mb-3" style={{ color: "#00A49A" }}></i>
-        <h5 className="fw-bold">Partnership Approach</h5>
-        <p className="text-muted">We work with you to achieve your personal and business financial goals.</p>
-      </div>
-    </div>
-  </section>
-
-  {/* Stats Section */}
-  <section className="stats-section p-5 text-center" style={{ backgroundColor: "#F4F8FB" }}>
-    <div className="row">
-      <div className="col-md-4">
-        <h2 className="fw-bold" style={{ color: "#0033A0" }}>50+</h2>
-        <p className="text-muted">Years of Banking Excellence</p>
-      </div>
-      <div className="col-md-4">
-        <h2 className="fw-bold" style={{ color: "#00A49A" }}>10M+</h2>
-        <p className="text-muted">Customers Served Globally</p>
-      </div>
-      <div className="col-md-4">
-        <h2 className="fw-bold" style={{ color: "#0095DA" }}>100+</h2>
-        <p className="text-muted">Countries With Our Presence</p>
-      </div>
-    </div>
-  </section>
-
-  {/* Call to Action */}
-  <section className="cta text-center p-5" style={{ backgroundColor: "#0033A0", color: "white" }}>
-    <h2 className="fw-semibold">Experience Seamless Banking Today</h2>
-    <p className="mb-4">
-      Explore our wide range of financial services designed to simplify your everyday and long-term banking needs.
-    </p>
-    <button className="btn btn-success btn-lg">
-      Explore Services
-    </button>
-  </section>
-</div>
+  );
+}
+ 
+export default DocumentManager;
