@@ -2,8 +2,17 @@ import React, { useState } from "react";
 import "./SalesApplicationTable.css";
 
 function SalesApplicationsTable() {
+  // 🔹 Fixed timeline options
+  const timelineStages = [
+    "Application Submitted",
+    "Application Processing",
+    "Credit Card Offered",
+    "Application Accepted",
+    "Printed and Shipped"
+  ];
+
   // 🔹 Demo Data
-  const [applications] = useState([
+  const [applications, setApplications] = useState([
     {
       applicationId: "APP1001",
       name: "Abhishek Kale",
@@ -19,6 +28,7 @@ function SalesApplicationsTable() {
       cardLast4: "5678",
       approvalDate: "2025-09-02",
       processedBy: "System Auto-Decision",
+      applicationTimeline: "Application Submitted",
     },
     {
       applicationId: "APP1002",
@@ -36,6 +46,7 @@ function SalesApplicationsTable() {
       cardLast4: "-",
       approvalDate: "-",
       processedBy: "Underwriter01",
+      applicationTimeline: "Application Processing",
     },
     {
       applicationId: "APP1003",
@@ -53,8 +64,18 @@ function SalesApplicationsTable() {
       cardLast4: "-",
       approvalDate: "2025-09-01",
       processedBy: "Underwriter02",
+      applicationTimeline: "Credit Card Offered",
     },
   ]);
+
+  // 🔹 Handle timeline change
+  const handleTimelineChange = (id, newTimeline) => {
+    setApplications((prevApps) =>
+      prevApps.map((app) =>
+        app.applicationId === id ? { ...app, applicationTimeline: newTimeline } : app
+      )
+    );
+  };
 
   return (
     <div className="sc-container">
@@ -95,7 +116,20 @@ function SalesApplicationsTable() {
                   <td>{app.assignedLimit}</td>
                   <td>{app.approvalDate}</td>
                   <td>{app.processedBy}</td>
-                  <td>{app.applicationTimeline }</td>
+                  <td>
+                    <select
+                      value={app.applicationTimeline}
+                      onChange={(e) =>
+                        handleTimelineChange(app.applicationId, e.target.value)
+                      }
+                    >
+                      {timelineStages.map((stage, index) => (
+                        <option key={index} value={stage}>
+                          {stage}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
                 </tr>
               ))}
             </tbody>
