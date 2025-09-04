@@ -2,47 +2,73 @@ import axios from "axios";
 import UnifiedLoginModal from "../components/UnifiedLoginModal";
 const API_BASE_URL = "http://localhost:8080";
 
++// Axios instance for customer APIs with JWT interceptor
++const customerAPI = axios.create({
++  baseURL: `${API_BASE_URL}/customer`,
++});
++
++customerAPI.interceptors.request.use((req) => {
++  const token = localStorage.getItem("customerToken");
++  if (token) {
++    req.headers.Authorization = `Bearer ${token}`;
++  }
++  return req;
++});
+
 const loginSalesUser = async (credentials) => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/salesuser/login`, {
-        userId: credentials.userId,   // must match SalesUser.java field
-        password: credentials.password
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Login failed:", error.response ? error.response.data : error.message);
-      throw error;
-    }
-  };
-  const signupCustomer = async (customerData) => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/customer/signup`, {
-        name: customerData.name,
-        email: customerData.email,
-        password: customerData.password,
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Signup failed:", error.response ? error.response.data : error.message);
-      throw error.response?.data || { error: "Signup failed" };
-    }
-  };
-  const loginCustomer = async (credentials) => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/customer/login`, {
-        email: credentials.username,  // username is actually email
-        password: credentials.password,
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Login failed:", error.response ? error.response.data : error.message);
-      throw error.response?.data || { error: "Login failed" };
-    }
-  };
-  
-  const UnifiedLoginModalService = {
-    loginSalesUser,
-    signupCustomer,
-    loginCustomer,
-  };
+  try {
+    const response = await axios.post(`${API_BASE_URL}/salesuser/login`, {
+      userId: credentials.userId,   // must match SalesUser.java field
+      password: credentials.password
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Login failed:", error.response ? error.response.data : error.message);
+    throw error;
+  }
+};
+
+const signupCustomer = async (customerData) => {
+  try {
+-    const response = await axios.post(`${API_BASE_URL}/customer/signup`, {
+-      name: customerData.name,
+-      email: customerData.email,
+-      password: customerData.password,
+-    });
++    const response = await customerAPI.post(`/signup`, {
++      name: customerData.name,
++      email: customerData.email,
++      password: customerData.password,
++    });
+    return response.data;
+  } catch (error) {
+    console.error("Signup failed:", error.response ? error.response.data : error.message);
+    throw error.response?.data || { error: "Signup failed" };
+  }
+};
+
+const loginCustomer = async (credentials) => {
+  try {
+-    const response = await axios.post(`${API_BASE_URL}/customer/login`, {
+-      email: credentials.username,  // username is actually email
+-      password: credentials.password,
+-    });
++    const response = await customerAPI.post(`/login`, {
++      email: credentials.username,  // username is actually email
++      password: credentials.password,
++    });
+    return response.data;
+  } catch (error) {
+    console.error("Login failed:", error.response ? error.response.data : error.message);
+    throw error.response?.data || { error: "Login failed" };
+  }
+};
+
+const UnifiedLoginModalService = {
+  loginSalesUser,
+  signupCustomer,
+  loginCustomer,
++  customerAPI, // export for other protected customer API calls
+};
+
 export default UnifiedLoginModalService;
