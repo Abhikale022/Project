@@ -1,1 +1,225 @@
-
+import React, { useState, useEffect } from "react";
+import documentService from "./serviceDocuments"; // new service for documents
+import "./DocumentManager.css";
+ 
+function DocumentManager() {
+  const [documents, setDocuments] = useState([]);
+ 
+  const [editingIdx, setEditingIdx] = useState(-1);
+  const [editData, setEditData] = useState({});
+  const [creating, setCreating] = useState(false);
+  const [createData, setCreateData] = useState({
+    applicationId: "",
+    documentName: "",
+    documentType: "",
+    file: null, // store file instead of path
+  });
+ 
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
+ 
+  const fetchDocuments = () => {
+    documentService
+      .getAllDocuments()
+      .then((res) => setDocuments(res.data))
+      .catch((err) => console.error("Error fetching documents", err));
+  };
+ 
+  const handleEdit = (idx) => {
+    setEditingIdx(idx);
+    setEditData({ ...documents[idx] });
+  };
+ 
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditData((prev) => ({ ...prev, [name]: value }));
+  };
+ 
+  const handleEditSave = (idx) => {
+    const doc = documents[idx];
+    documentService
+      .updateDocument(doc.id, editData)
+      .then((res) => {
+        const updatedDocs = [...documents];
+        updatedDocs[idx] = res.data;
+        setDocuments(updatedDocs);
+        setEditingIdx(-1);
+      })
+      .catch((err) => console.error("Error updating document:", err));
+  };
+ 
+  const handleDelete = (idx) => {
+    const doc = documents[idx];
+    documentService
+      .deleteDocument(doc.id)
+      .then(() => {
+        const updatedDocs = [...documents];
+        updatedDocs.splice(idx, 1);
+        setDocuments(updatedDocs);
+      })
+      .catch((err) => console.error("Error deleting document:", err));
+  };
+ 
+  const handleCreateOpen = () => {
+    setCreating(true);
+    setCreateData({
+      applicationId: "",
+      documentName: "",
+      documentType: "",
+      file: null,
+    });
+  };
+ 
+  const handleCreateChange = (e) => {
+    const { name, value } = e.target;
+    setCreateData((prev) => ({ ...prev, [name]: value }));
+  };
+ 
+  const handleFileChange = (e) => {
+    setCreateData((prev) => ({ ...prev, file: e.target.files[0] }));
+  };
+ 
+  const handleCreateSave = () => {
+    const formData = new FormData();
+    formData.append("applicationId", parseInt(createData.applicationId,10));
+    formData.append("documentName", createData.documentName);
+    formData.append("documentType", createData.documentType);
+    formData.append("file", createData.file);
+ 
+    documentService
+      .createDocument(formData)
+      .then((res) => {
+        setDocuments([res.data, ...documents]);
+        setCreating(false);
+      })
+      .catch((err) => console.error("Error creating document:", err));
+  };
+ 
+  return (
+    <div className="document-manager-container">
+      <h2>Document Manager</h2>
+ 
+      <button className="btn btn-create" onClick={handleCreateOpen}>
+        + Add Document
+      </button>
+ 
+      <table className="document-table">
+        <thead>
+          <tr>
+            <th>Application ID</th>
+            <th>Document Name</th>
+            <th>Document Type</th>
+            <th>File</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {documents.map((doc, idx) => (
+            <tr key={doc.id}>
+              {editingIdx === idx ? (
+                <>
+                  <td>
+                    <input
+                      name="applicationId"
+                      value={editData.applicationId}
+                      onChange={handleEditChange}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      name="documentName"
+                      value={editData.documentName}
+                      onChange={handleEditChange}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      name="documentType"
+                      value={editData.documentType}
+                      onChange={handleEditChange}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      name="fileUrl"
+                      value={editData.fileUrl}
+                      onChange={handleEditChange}
+                    />
+                  </td>
+                  <td>
+                    <button onClick={() => handleEditSave(idx)}>✔ Save</button>
+                    <button onClick={() => setEditingIdx(-1)}>✖ Cancel</button>
+                  </td>
+                </>
+              ) : (
+                <>
+                  <td>{doc.applicationId}</td>
+                  <td>{doc.documentName}</td>
+                  <td>{doc.documentType}</td>
+                  <td>
+                    <a
+                      href={`http://localhost:8080${doc.fileUrl}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View
+                    </a>
+                  </td>
+                  <td>
+                    <button onClick={() => handleEdit(idx)}>Edit</button>
+                    <button onClick={() => handleDelete(idx)}>Delete</button>
+                  </td>
+                </>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+ 
+      {creating && (
+        <div className="modal-backdrop">
+          <div className="modal-box">
+            <h3>Add Document</h3>
+            <form onSubmit={(e) => e.preventDefault()}>
+              <label>
+                Application ID:
+                <input
+                  name="applicationId"
+                  value={createData.applicationId}
+                  onChange={handleCreateChange}
+                />
+              </label>
+              <label>
+                Document Name:
+                <input
+                  name="documentName"
+                  value={createData.documentName}
+                  onChange={handleCreateChange}
+                />
+              </label>
+              <label>
+                Document Type:
+                <input
+                  name="documentType"
+                  value={createData.documentType}
+                  onChange={handleCreateChange}
+                />
+              </label>
+              <label>
+                Upload File:
+                <input type="file" onChange={handleFileChange} />
+              </label>
+              <div>
+                <button onClick={handleCreateSave}>Create</button>
+                <button onClick={() => setCreating(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+ 
+export default DocumentManager;
