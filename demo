@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/sclogo.png";
-import ApplicationStatus from './ApplicationStatus';
-import CreditCardOfferCustomer from './CreditCardOfferCustomer';
+import UnifiedLoginModalService from "../service/UnifiedLoginModalService"; // ✅ import service
 
 function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -10,6 +9,13 @@ function Header() {
 
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
   const closeDropdown = () => setDropdownOpen(false);
+
+  const handleLogout = () => {
+    // ✅ remove JWT token
+    UnifiedLoginModalService.logoutCustomer();
+    closeDropdown();
+    navigate("/"); // redirect to login page
+  };
 
   return (
     <>
@@ -124,13 +130,10 @@ function Header() {
         {/* Logo Left */}
         <div
           className="navbar-left"
-          onClick={() => navigate()}
+          onClick={() => navigate("/")}
           style={{ cursor: "pointer" }}
         >
-          <img
-            src={logo}
-            alt="Standard Chartered Logo"
-          />
+          <img src={logo} alt="Standard Chartered Logo" />
         </div>
 
         {/* Center Nav Links */}
@@ -159,15 +162,9 @@ function Header() {
             <Link to="/CreditCardOfferCustomer" onClick={closeDropdown}>
               Offer Status
             </Link>
-            <button
-              onClick={() => {
-                closeDropdown();
-                navigate("/home");
-              }}
-            >
+            <button onClick={handleLogout}>
               Logout
             </button>
-            
           </div>
         </div>
       </nav>
