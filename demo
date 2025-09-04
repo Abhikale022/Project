@@ -1,175 +1,288 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import logo from "../assets/sclogo.png";
-import UnifiedLoginModalService from "../service/UnifiedLoginModalService"; // ✅ import service
+package com.scb.creditcardorigination.customerLoginSignup.config;
 
-function Header() {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const navigate = useNavigate();
+import com.scb.creditcardorigination.customerLoginSignup.Service.CustomUserDetailsService;
+import com.scb.creditcardorigination.customerLoginSignup.Service.JwtUtil;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
-  const closeDropdown = () => setDropdownOpen(false);
+import java.io.IOException;
 
-  const handleLogout = () => {
-    // ✅ remove JWT token
-    UnifiedLoginModalService.logoutCustomer();
-    closeDropdown();
-    navigate("/"); // redirect to login page
-  };
+@Component
+public class JwtRequestFilter extends OncePerRequestFilter {
+    private final CustomUserDetailsService userDetailsService;
+    private final JwtUtil jwtUtil;
 
-  return (
-    <>
-      <style>{`
-        body {
-          margin: 0;
-          font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
-        }
-        .sc-navbar {
-          background: #fff;
-          border-bottom: 2px solid #ececec;
-          height: 80px;
-          display: flex;
-          align-items: center;
-          box-sizing: border-box;
-          padding: 0 40px;
-          justify-content: space-between;
-          color: #222;
-        }
-        .sc-navbar .navbar-left img {
-          height: 80px;
-          cursor: pointer;
-        }
-        .sc-navbar .navbar-center {
-          display: flex;
-          gap: 48px;
-          font-size: 18px;
-          font-weight: 500;
-          align-items: center;
-        }
-        .sc-navbar .navbar-center a {
-          color: #222;
-          text-decoration: none;
-          padding: 4px 8px;
-          border-radius: 5px;
-          transition: background 0.2s, color 0.2s;
-          cursor: pointer;
-        }
-        .sc-navbar .navbar-center a:hover,
-        .sc-navbar .navbar-center a:focus {
-          background: #f2f9ff;
-          color: #1976d2;
-        }
-        .sc-navbar .navbar-right {
-          position: relative;
-        }
-        .sc-navbar .dropdown-btn {
-          background: none;
-          border: none;
-          font-size: 18px;
-          font-weight: 500;
-          color: #222;
-          cursor: pointer;
-          padding: 8px 22px;
-          border-radius: 6px;
-          transition: background 0.2s;
-        }
-        .sc-navbar .dropdown-btn:hover,
-        .sc-navbar .dropdown-btn:focus {
-          background: #f1f1f1;
-          outline: none;
-        }
-        .sc-navbar .dropdown-content {
-          position: absolute;
-          right: 0;
-          top: 100%;
-          background: white;
-          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.07);
-          border-radius: 8px;
-          width: 180px;
-          margin-top: 8px;
-          z-index: 1000;
-          display: ${dropdownOpen ? "block" : "none"};
-          user-select: none;
-        }
-        .sc-navbar .dropdown-content a,
-        .sc-navbar .dropdown-content button {
-          display: block;
-          width: 100%;
-          padding: 12px 18px;
-          color: #222;
-          background: none;
-          border: none;
-          text-align: left;
-          font-size: 16px;
-          font-weight: 500;
-          text-decoration: none;
-          cursor: pointer;
-          border-radius: 5px;
-          transition: background 0.2s;
-        }
-        .sc-navbar .dropdown-content a:hover,
-        .sc-navbar .dropdown-content button:hover {
-          background: #f5faff;
-        }
-        .sc-navbar .login-btn {
-          background: #008000;
-          color: white;
-          border: none;
-          padding: 8px 24px;
-          border-radius: 5px;
-          font-size: 18px;
-          font-weight: 500;
-          cursor: pointer;
-          margin-left: 30px;
-          width: 100px;
-          user-select: none;
-        }
-      `}</style>
+    @Autowired
+    public JwtRequestFilter(CustomUserDetailsService userDetailsService, JwtUtil jwtUtil) {
+        this.userDetailsService = userDetailsService;
+        this.jwtUtil = jwtUtil;
+    }
 
-      <nav className="sc-navbar">
-        {/* Logo Left */}
-        <div
-          className="navbar-left"
-          onClick={() => navigate("/")}
-          style={{ cursor: "pointer" }}
-        >
-          <img src={logo} alt="Standard Chartered Logo" />
-        </div>
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+        String path = request.getServletPath();
 
-        {/* Center Nav Links */}
-        <div className="navbar-center">
-          <Link to="/about">About Us</Link>
-          <Link to="/invest">Invest</Link>
-          <Link to="/offer">Offers</Link>
-          <Link to="/help">Help</Link>
-          <Link to="/services">Services</Link>
-        </div>
+        // 🔑 Skip JWT validation for login & signup
+        if (path.equals("/customer/login") || path.equals("/customer/signup")) {
+            chain.doFilter(request, response);
+            return;
+        }
 
-        {/* Dropdown (Logout Menu) Right */}
-        <div className="navbar-right">
-          <button
-            className="dropdown-btn"
-            onClick={toggleDropdown}
-            aria-expanded={dropdownOpen}
-            aria-haspopup="true"
-          >
-            Logout ▾
-          </button>
-          <div className="dropdown-content" onMouseLeave={closeDropdown}>
-            <Link to="/ApplicationStatus" onClick={closeDropdown}>
-              Tracker
-            </Link>
-            <Link to="/CreditCardOfferCustomer" onClick={closeDropdown}>
-              Offer Status
-            </Link>
-            <button onClick={handleLogout}>
-              Logout
-            </button>
-          </div>
-        </div>
-      </nav>
-    </>
-  );
+        final String authHeader = request.getHeader("Authorization");
+
+        String username = null;
+        String jwt = null;
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwt = authHeader.substring(7);
+            username = jwtUtil.extractUsername(jwt);
+        }
+
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+
+            if (jwtUtil.validateToken(jwt, userDetails)) {
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+        }
+        chain.doFilter(request, response);
+    }
 }
 
-export default Header;
+package com.scb.creditcardorigination.customerLoginSignup.Service;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
+@Component
+public class JwtUtil {
+    private final String SECRET_KEY = "mySuperSecretLongLongSecretKey1234567890MustBe32CharsLong"; // use env variable in prod
+
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    private Boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
+    public String generateToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        return createToken(claims, userDetails.getUsername());
+    }
+
+    private String createToken(Map<String, Object> claims, String subject) {
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .compact();
+    }
+
+    public Boolean validateToken(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+}
+
+
+package com.scb.creditcardorigination.customerLoginSignup.config;
+
+import com.scb.creditcardorigination.customerLoginSignup.Service.CustomUserDetailsService;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+@Configuration
+public class SecurityConfig {
+    private final CustomUserDetailsService userDetailsService;
+    private final JwtRequestFilter jwtRequestFilter;
+
+    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtRequestFilter jwtRequestFilter) {
+        this.userDetailsService = userDetailsService;
+        this.jwtRequestFilter = jwtRequestFilter;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public DaoAuthenticationProvider authProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.csrf(csrf ->csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/customer/signup", "/customer/login").permitAll()
+                    .anyRequest().authenticated()
+                )
+                .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+        http.authenticationProvider(authProvider());
+        http.cors(cors-> {});
+        return http.build();
+    }
+}
+
+package com.scb.creditcardorigination.customerLoginSignup.Controller;
+
+import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
+import com.scb.creditcardorigination.customerLoginSignup.Service.CustomerLoginSignupService;
+import com.scb.creditcardorigination.customerLoginSignup.Service.CustomUserDetailsService;
+import com.scb.creditcardorigination.customerLoginSignup.Service.JwtUtil;
+import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+@CrossOrigin(origins="http://localhost:3000")
+@RestController
+@RequestMapping("/customer")
+public class CustomerAuthController {
+
+    private final AuthenticationManager authenticationManager;
+    private final CustomUserDetailsService userDetailsService;
+    private final JwtUtil jwtUtil;
+    private final CustomerLoginSignupService signupService;
+
+    @Autowired
+    public CustomerAuthController(AuthenticationManager authenticationManager,
+                                  CustomUserDetailsService userDetailsService,
+                                  JwtUtil jwtUtil,
+                                  CustomerLoginSignupService signupService) {
+        this.authenticationManager = authenticationManager;
+        this.userDetailsService = userDetailsService;
+        this.jwtUtil = jwtUtil;
+        this.signupService = signupService;
+    }
+
+    // DTO for login request
+    public static class LoginRequest {
+        @NotBlank
+        private String email;
+        @NotBlank
+        private String password;
+
+        // getters and setters
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+    }
+
+    // =================== SIGNUP ===================
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(@RequestBody CustomerLoginSignup customer) {
+        try {
+            CustomerLoginSignup saved = signupService.register(customer);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Signup successful");
+            response.put("customerId", saved.getId());
+            response.put("email", saved.getEmail());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RuntimeException ex) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        } catch (Exception ex) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Something went wrong: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+
+    // =================== LOGIN ===================
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+
+            UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
+            String token = jwtUtil.generateToken(userDetails);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Login successful");
+            response.put("token", token);
+
+            return ResponseEntity.ok(response);
+
+        } catch (BadCredentialsException ex) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Invalid email or password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        } catch (Exception ex) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Something went wrong: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+}
