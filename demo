@@ -1,288 +1,51 @@
-package com.scb.creditcardorigination.customerLoginSignup.config;
+package com.scb.creditcardorigination.customerLoginSignup.Model;
 
-import com.scb.creditcardorigination.customerLoginSignup.Service.CustomUserDetailsService;
-import com.scb.creditcardorigination.customerLoginSignup.Service.JwtUtil;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-import org.springframework.web.filter.OncePerRequestFilter;
+import jakarta.persistence.*;
 
-import java.io.IOException;
+@Entity
+    @Table(name = "customer_login_signup")
+    public class CustomerLoginSignup {
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
-@Component
-public class JwtRequestFilter extends OncePerRequestFilter {
-    private final CustomUserDetailsService userDetailsService;
-    private final JwtUtil jwtUtil;
+        @Column(nullable = false)
+        private String name;
 
-    @Autowired
-    public JwtRequestFilter(CustomUserDetailsService userDetailsService, JwtUtil jwtUtil) {
-        this.userDetailsService = userDetailsService;
-        this.jwtUtil = jwtUtil;
-    }
-
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-            throws ServletException, IOException {
-        String path = request.getServletPath();
-
-        // 🔑 Skip JWT validation for login & signup
-        if (path.equals("/customer/login") || path.equals("/customer/signup")) {
-            chain.doFilter(request, response);
-            return;
-        }
-
-        final String authHeader = request.getHeader("Authorization");
-
-        String username = null;
-        String jwt = null;
-
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            jwt = authHeader.substring(7);
-            username = jwtUtil.extractUsername(jwt);
-        }
-
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-
-            if (jwtUtil.validateToken(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
-        }
-        chain.doFilter(request, response);
-    }
-}
-
-package com.scb.creditcardorigination.customerLoginSignup.Service;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-
-@Component
-public class JwtUtil {
-    private final String SECRET_KEY = "mySuperSecretLongLongSecretKey1234567890MustBe32CharsLong"; // use env variable in prod
-
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
-    public Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
-    }
-
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
-    }
-
-    private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody();
-    }
-
-    private Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, userDetails.getUsername());
-    }
-
-    private String createToken(Map<String, Object> claims, String subject) {
-        return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(subject)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
-                .compact();
-    }
-
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
-    }
-}
-
-
-package com.scb.creditcardorigination.customerLoginSignup.config;
-
-import com.scb.creditcardorigination.customerLoginSignup.Service.CustomUserDetailsService;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-@Configuration
-public class SecurityConfig {
-    private final CustomUserDetailsService userDetailsService;
-    private final JwtRequestFilter jwtRequestFilter;
-
-    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtRequestFilter jwtRequestFilter) {
-        this.userDetailsService = userDetailsService;
-        this.jwtRequestFilter = jwtRequestFilter;
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public DaoAuthenticationProvider authProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
-
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf ->csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/customer/signup", "/customer/login").permitAll()
-                    .anyRequest().authenticated()
-                )
-                .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-        http.authenticationProvider(authProvider());
-        http.cors(cors-> {});
-        return http.build();
-    }
-}
-
-package com.scb.creditcardorigination.customerLoginSignup.Controller;
-
-import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
-import com.scb.creditcardorigination.customerLoginSignup.Service.CustomerLoginSignupService;
-import com.scb.creditcardorigination.customerLoginSignup.Service.CustomUserDetailsService;
-import com.scb.creditcardorigination.customerLoginSignup.Service.JwtUtil;
-import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
-@CrossOrigin(origins="http://localhost:3000")
-@RestController
-@RequestMapping("/customer")
-public class CustomerAuthController {
-
-    private final AuthenticationManager authenticationManager;
-    private final CustomUserDetailsService userDetailsService;
-    private final JwtUtil jwtUtil;
-    private final CustomerLoginSignupService signupService;
-
-    @Autowired
-    public CustomerAuthController(AuthenticationManager authenticationManager,
-                                  CustomUserDetailsService userDetailsService,
-                                  JwtUtil jwtUtil,
-                                  CustomerLoginSignupService signupService) {
-        this.authenticationManager = authenticationManager;
-        this.userDetailsService = userDetailsService;
-        this.jwtUtil = jwtUtil;
-        this.signupService = signupService;
-    }
-
-    // DTO for login request
-    public static class LoginRequest {
-        @NotBlank
+        @Column(nullable = false, unique = true)
         private String email;
-        @NotBlank
+
+        @Column(nullable = false)
         private String password;
 
-        // getters and setters
+        public CustomerLoginSignup() {}
+
+        public CustomerLoginSignup(String name, String email, String password) {
+            this.name = name;
+            this.email = email;
+            this.password = password;
+        }
+
+        // Getters & Setters
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
         public String getEmail() { return email; }
         public void setEmail(String email) { this.email = email; }
         public String getPassword() { return password; }
         public void setPassword(String password) { this.password = password; }
     }
 
-    // =================== SIGNUP ===================
-    @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody CustomerLoginSignup customer) {
-        try {
-            CustomerLoginSignup saved = signupService.register(customer);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Signup successful");
-            response.put("customerId", saved.getId());
-            response.put("email", saved.getEmail());
+package com.scb.creditcardorigination.customerLoginSignup.Repository;
+import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.stereotype.Repository;
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (RuntimeException ex) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", ex.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
-        } catch (Exception ex) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Something went wrong: " + ex.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-        }
-    }
-
-    // =================== LOGIN ===================
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-            );
-
-            UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-            String token = jwtUtil.generateToken(userDetails);
-
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Login successful");
-            response.put("token", token);
-
-            return ResponseEntity.ok(response);
-
-        } catch (BadCredentialsException ex) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Invalid email or password");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-        } catch (Exception ex) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Something went wrong: " + ex.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-        }
-    }
+import java.util.Optional;
+@Repository
+public interface CustomerLoginSignupRepository extends JpaRepository<CustomerLoginSignup, Long> {
+    Optional<CustomerLoginSignup> findByEmail(String email);
 }
