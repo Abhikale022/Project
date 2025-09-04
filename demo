@@ -1,51 +1,33 @@
-package com.scb.creditcardorigination.customerLoginSignup.Model;
+package com.scb.creditcardorigination.customerLoginSignup.Service;
 
-import jakarta.persistence.*;
+import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
+import com.scb.creditcardorigination.customerLoginSignup.Repository.CustomerLoginSignupRepository;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
-@Entity
-    @Table(name = "customer_login_signup")
-    public class CustomerLoginSignup {
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
+import java.util.Collections;
 
-        @Column(nullable = false)
-        private String name;
+@Service
+public class CustomUserDetailsService implements UserDetailsService {
 
-        @Column(nullable = false, unique = true)
-        private String email;
+    private final CustomerLoginSignupRepository repository;
 
-        @Column(nullable = false)
-        private String password;
-
-        public CustomerLoginSignup() {}
-
-        public CustomerLoginSignup(String name, String email, String password) {
-            this.name = name;
-            this.email = email;
-            this.password = password;
-        }
-
-        // Getters & Setters
-        public Long getId() { return id; }
-        public void setId(Long id) { this.id = id; }
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
+    public CustomUserDetailsService(CustomerLoginSignupRepository repository) {
+        this.repository = repository;
     }
 
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        CustomerLoginSignup customer = repository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-package com.scb.creditcardorigination.customerLoginSignup.Repository;
-import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
-@Repository
-public interface CustomerLoginSignupRepository extends JpaRepository<CustomerLoginSignup, Long> {
-    Optional<CustomerLoginSignup> findByEmail(String email);
+        return new User(
+                customer.getEmail(),
+                customer.getPassword(),
+                Collections.emptyList() // no roles/authorities for now
+        );
+    }
 }
