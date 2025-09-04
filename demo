@@ -1,74 +1,459 @@
-import axios from "axios";
-import UnifiedLoginModal from "../components/UnifiedLoginModal";
-const API_BASE_URL = "http://localhost:8080";
+import React from "react";
+import {Navbar, QuickActions, Carousel} from './components/HomePage';
+// import Navbar from "./components/Navbar";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import CreditCardApplicationForm from "./components/CreditCardApplicationForm";
+import HomePage from "./components/HomePage";
+import UnifiedLoginModal from "./components/UnifiedLoginModal";
+import ApplicationStatus from "./components/ApplicationStatus";
+import Footer from "./components/Footer";
+import Onboarding from "./components/Onboarding";
+import CreditCardOfferCustomer from "./components/CreditCardOfferCustomer";
+import CreditCardOfferSales from "./components/CreditCardOfferSales";
+import Header from './components/Header'
+import CreditCardComparison from "./components/CreditCardComparison";
+import SalesApplicationsTable from "./components/SalesApplicationTable";
 
-+// Axios instance for customer APIs with JWT interceptor
-+const customerAPI = axios.create({
-+  baseURL: `${API_BASE_URL}/customer`,
-+});
-+
-+customerAPI.interceptors.request.use((req) => {
-+  const token = localStorage.getItem("customerToken");
-+  if (token) {
-+    req.headers.Authorization = `Bearer ${token}`;
-+  }
-+  return req;
-+});
 
-const loginSalesUser = async (credentials) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/salesuser/login`, {
-      userId: credentials.userId,   // must match SalesUser.java field
-      password: credentials.password
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Login failed:", error.response ? error.response.data : error.message);
-    throw error;
-  }
-};
+function App() {
+       const location = useLocation();
+       const hideHeaderOn = ["/" , "/home","/CreditCardComparison"];
+       const showHeader = !hideHeaderOn.includes(location.pathname);
+  return (
+    <>
+      {showHeader && <Header/>}
+      <Routes>
+        {/* Redirect root to HomePage */}
+         <Route path="/" element={<Navigate to="/home" />} />
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/CreditCardApplicationForm" element={<CreditCardApplicationForm />} /> {/* after sales user login */}
+         <Route path="/Onboarding" element={<Onboarding />} /> 
+        
+        <Route path="/CreditCardOfferSales" element={<CreditCardOfferSales />} />  
+        <Route path="/SalesApplicationTable" element={<SalesApplicationsTable />} />  
+         <Route path="/application-status" element={<ApplicationStatus />} />   
 
-const signupCustomer = async (customerData) => {
-  try {
--    const response = await axios.post(`${API_BASE_URL}/customer/signup`, {
--      name: customerData.name,
--      email: customerData.email,
--      password: customerData.password,
--    });
-+    const response = await customerAPI.post(`/signup`, {
-+      name: customerData.name,
-+      email: customerData.email,
-+      password: customerData.password,
-+    });
-    return response.data;
-  } catch (error) {
-    console.error("Signup failed:", error.response ? error.response.data : error.message);
-    throw error.response?.data || { error: "Signup failed" };
-  }
-};
 
-const loginCustomer = async (credentials) => {
-  try {
--    const response = await axios.post(`${API_BASE_URL}/customer/login`, {
--      email: credentials.username,  // username is actually email
--      password: credentials.password,
--    });
-+    const response = await customerAPI.post(`/login`, {
-+      email: credentials.username,  // username is actually email
-+      password: credentials.password,
-+    });
-    return response.data;
-  } catch (error) {
-    console.error("Login failed:", error.response ? error.response.data : error.message);
-    throw error.response?.data || { error: "Login failed" };
-  }
-};
 
-const UnifiedLoginModalService = {
-  loginSalesUser,
-  signupCustomer,
-  loginCustomer,
-+  customerAPI, // export for other protected customer API calls
-};
+        <Route path="/home" element={HomePage} />
+        <Route path="/faq" element={<h1>FAQ Page</h1>} />
+        <Route path="/about" element={<div className="about-container">
+  {/* Hero Section */}
+  <section className="about-hero text-center p-5" style={{ backgroundColor: "#0033A0", color: "white" }}>
+    <h1 className="fw-bold">About Us</h1>
+    <p className="lead" style={{ color: "#cce0ff" }}>
+      Delivering trusted and transparent credit card solutions for a stronger financial future.
+    </p>
+  </section>
 
-export default UnifiedLoginModalService;
+  {/* Mission & Vision */}
+  <section className="mission-vision d-flex flex-wrap p-5 bg-light">
+    <div className="col-md-6 pe-4">
+      <h2 className="fw-semibold text-primary">
+        <i className="fa-solid fa-bullseye text-success me-2"></i> Our Mission
+      </h2>
+      <p>
+        Our mission is to empower individuals by making credit card origination 
+        simple, secure, and transparent. We strive to provide access to the 
+        right financial products for every lifestyle and need.
+      </p>
+    </div>
+    <div className="col-md-6 ps-4">
+      <h2 className="fw-semibold text-primary">
+        <i className="fa-solid fa-lightbulb text-info me-2"></i> Our Vision
+      </h2>
+      <p>
+        We envision a future where credit card access is inclusive and reliable,
+        helping customers achieve their financial aspirations while maintaining 
+        the highest standards of security and trust.
+      </p>
+    </div>
+  </section>
+
+  {/* Why Choose Us */}
+  <section className="why-us p-5 bg-white">
+    <h2 className="text-center fw-semibold mb-4 text-primary">Why Choose Us</h2>
+    <div className="row text-center">
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-bolt fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h4 className="fw-bold">Fast Approvals</h4>
+        <p className="text-muted">Quick processing with minimal paperwork and maximum convenience.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-shield-halved fa-2x mb-3" style={{ color: "#0033A0" }}></i>
+        <h4 className="fw-bold">Secure Process</h4>
+        <p className="text-muted">Bank-grade encryption with compliance to global security standards.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-credit-card fa-2x mb-3" style={{ color: "#0095DA" }}></i>
+        <h4 className="fw-bold">Diverse Options</h4>
+        <p className="text-muted">From entry-level to premium, find a card designed for your lifestyle.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-headset fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h4 className="fw-bold">Dedicated Support</h4>
+        <p className="text-muted">Our team of experts is available to guide you through every step.</p>
+      </div>
+    </div>
+  </section>
+
+  {/* Achievements / Stats */}
+  <section className="stats-section p-5 text-center" style={{ backgroundColor: "#F4F8FB" }}>
+    <div className="row">
+      <div className="col-md-3">
+        <h2 className="fw-bold" style={{ color: "#0033A0" }}>50,000+</h2>
+        <p className="text-muted">Applications Successfully Processed</p>
+      </div>
+      <div className="col-md-3">
+        <h2 className="fw-bold" style={{ color: "#00A49A" }}>100+</h2>
+        <p className="text-muted">Banking & Financial Partnerships</p>
+      </div>
+      <div className="col-md-3">
+        <h2 className="fw-bold" style={{ color: "#0095DA" }}>5+ Years</h2>
+        <p className="text-muted">Trusted Service in Credit Card Origination</p>
+      </div>
+    </div>
+  </section>
+</div>} />
+<Route path="/invest" element={<div className="invest-container">
+  {/* Hero Section */}
+  <section className="invest-hero text-center p-5" style={{ backgroundColor: "#0033A0", color: "white" }}>
+    <h1 className="fw-bold">Invest With Confidence</h1>
+    <p className="lead" style={{ color: "#cce0ff" }}>
+      Smart investment solutions designed to help you grow, protect, and manage your wealth.
+    </p>
+  </section>
+
+  {/* Mission & Vision */}
+  <section className="mission-vision d-flex flex-wrap p-5 bg-light">
+    <div className="col-md-6 pe-4">
+      <h2 className="fw-semibold text-primary">
+        <i className="fa-solid fa-chart-line text-success me-2"></i> Our Mission
+      </h2>
+      <p>
+        To empower individuals and businesses with access to secure, transparent, 
+        and high-performing investment opportunities that align with long-term 
+        financial goals.
+      </p>
+    </div>
+    <div className="col-md-6 ps-4">
+      <h2 className="fw-semibold text-primary">
+        <i className="fa-solid fa-lightbulb text-info me-2"></i> Our Vision
+      </h2>
+      <p>
+        To create a trusted investment ecosystem where customers can grow 
+        their wealth confidently, supported by expert guidance and world-class 
+        financial tools.
+      </p>
+    </div>
+  </section>
+
+  {/* Why Choose Us */}
+  <section className="why-us p-5 bg-white">
+    <h2 className="text-center fw-semibold mb-4 text-primary">Why Invest With Us</h2>
+    <div className="row text-center">
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-piggy-bank fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h4 className="fw-bold">Diverse Products</h4>
+        <p className="text-muted">Mutual funds, fixed deposits, bonds, and equity investments tailored to your needs.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-lock fa-2x mb-3" style={{ color: "#0033A0" }}></i>
+        <h4 className="fw-bold">Secure Platform</h4>
+        <p className="text-muted">Transactions backed by bank-grade security and regulatory compliance.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-user-tie fa-2x mb-3" style={{ color: "#0095DA" }}></i>
+        <h4 className="fw-bold">Expert Guidance</h4>
+        <p className="text-muted">Investment advisors and research-driven insights to guide smarter decisions.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-chart-pie fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h4 className="fw-bold">Tailored Portfolios</h4>
+        <p className="text-muted">Personalized investment strategies based on your risk profile and goals.</p>
+      </div>
+    </div>
+  </section>
+
+  {/* Achievements / Stats */}
+  <section className="stats-section p-5 text-center" style={{ backgroundColor: "#F4F8FB" }}>
+    <div className="row">
+      <div className="col-md-3">
+        <h2 className="fw-bold" style={{ color: "#0033A0" }}>₹5,000 Cr+</h2>
+        <p className="text-muted">Assets Under Management</p>
+      </div>
+      <div className="col-md-3">
+        <h2 className="fw-bold" style={{ color: "#00A49A" }}>200,000+</h2>
+        <p className="text-muted">Satisfied Investors</p>
+      </div>
+      <div className="col-md-3">
+        <h2 className="fw-bold" style={{ color: "#0095DA" }}>15+ Years</h2>
+        <p className="text-muted">Experience in Wealth Management</p>
+      </div>
+    </div>
+  </section>
+</div>} />
+        <Route path="/offer" element={<div className="offers-container">
+  {/* Hero Section */}
+  <section className="offers-hero text-center p-5" style={{ backgroundColor: "#0033A0", color: "white" }}>
+    <h1 className="fw-bold">Exclusive Credit Card Offers</h1>
+    <p className="lead" style={{ color: "#cce0ff" }}>
+      Choose the card that matches your lifestyle and enjoy unmatched benefits & rewards.
+    </p>
+  </section>
+
+  {/* Card Highlights */}
+  <section className="card-highlights p-5 bg-light">
+    <h2 className="text-center fw-semibold mb-5 text-primary">Our Featured Cards</h2>
+    <div className="row text-center">
+      {/* Silver Card */}
+      <div className="col-md-3 mb-3">
+        <i className="fa-solid fa-credit-card fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h4 className="fw-bold">Silver Card</h4>
+        <p className="text-muted">Affordable and rewarding, perfect for first-time credit card users.</p>
+        <ul className="list-unstyled text-muted">
+          <li>1 reward point on every ₹200 spent</li>
+          <li>Fuel surcharge waiver up to ₹100/month</li>
+          <li>Welcome gift worth ₹250</li>
+        </ul>
+      </div>
+      {/* Gold Card */}
+      <div className="col-md-3 mb-3">
+        <i className="fa-solid fa-gem fa-2x mb-3" style={{ color: "#FFD700" }}></i>
+        <h4 className="fw-bold">Gold Card</h4>
+        <p className="text-muted">Balanced choice with travel, dining, and lifestyle benefits.</p>
+        <ul className="list-unstyled text-muted">
+          <li>2 reward points on every ₹150 spent</li>
+          <li>2 free airport lounge visits/year</li>
+          <li>Welcome gift worth ₹1,000</li>
+        </ul>
+      </div>
+      {/* Platinum Card */}
+      <div className="col-md-3 mb-3">
+        <i className="fa-solid fa-crown fa-2x mb-3" style={{ color: "#0033A0" }}></i>
+        <h4 className="fw-bold">Platinum Card</h4>
+        <p className="text-muted">Premium lifestyle card with the highest rewards and global privileges.</p>
+        <ul className="list-unstyled text-muted">
+          <li>3 reward points on every ₹100 spent</li>
+          <li>6 free airport lounge visits/year</li>
+          <li>Welcome gift worth ₹3,000</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  {/* Why Choose Our Cards */}
+  <section className="why-cards p-5 bg-white">
+    <h2 className="text-center fw-semibold mb-4 text-primary">Why Choose Our Credit Cards?</h2>
+    <div className="row text-center">
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-percent fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h5 className="fw-bold">Exclusive Discounts</h5>
+        <p className="text-muted">Enjoy special offers on dining, shopping, and travel bookings.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-plane fa-2x mb-3" style={{ color: "#0095DA" }}></i>
+        <h5 className="fw-bold">Travel Benefits</h5>
+        <p className="text-muted">Airport lounge access, complimentary insurance, and travel perks.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-wallet fa-2x mb-3" style={{ color: "#0033A0" }}></i>
+        <h5 className="fw-bold">Cashback & Rewards</h5>
+        <p className="text-muted">Earn cashback and reward points on every transaction you make.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-shield-halved fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h5 className="fw-bold">Secure Payments</h5>
+        <p className="text-muted">Enhanced security with EMV chip, fraud protection, and OTP.</p>
+      </div>
+    </div>
+  </section>
+
+  {/* Stats Section */}
+  <section className="stats-section p-5 text-center" style={{ backgroundColor: "#F4F8FB" }}>
+    <div className="row">
+      <div className="col-md-3">
+        <h2 className="fw-bold" style={{ color: "#0033A0" }}>1 Million+</h2>
+        <p className="text-muted">Cards Issued</p>
+      </div>
+      <div className="col-md-3">
+        <h2 className="fw-bold" style={{ color: "#00A49A" }}>500+</h2>
+        <p className="text-muted">Exclusive Brand Partnerships</p>
+      </div>
+      <div className="col-md-3">
+        <h2 className="fw-bold" style={{ color: "#0095DA" }}>24/7</h2>
+        <p className="text-muted">Customer Support</p>
+      </div>
+    </div>
+  </section>
+</div>} />
+        <Route path="/help" element={<div className="help-container">
+  {/* Hero Section */}
+  <section className="help-hero text-center p-5" style={{ backgroundColor: "#0033A0", color: "white" }}>
+    <h1 className="fw-bold">How Can We Help You?</h1>
+    <p className="lead" style={{ color: "#cce0ff" }}>
+      Find quick answers, contact our support team, or explore helpful resources to manage your banking needs.
+    </p>
+  </section>
+
+  {/* Key Help Areas */}
+  <section className="help-areas p-5 bg-light">
+    <h2 className="text-center fw-semibold mb-5 text-primary">Popular Help Topics</h2>
+    <div className="row text-center">
+      <div className="col-md-3 mb-3">
+        <i className="fa-solid fa-circle-question fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h4 className="fw-bold">FAQs</h4>
+        <p className="text-muted">Get instant answers to commonly asked questions on cards, payments, and accounts.</p>
+      </div>
+      <div className="col-md-3 mb-3">
+        <i className="fa-solid fa-headset fa-2x mb-3" style={{ color: "#0095DA" }}></i>
+        <h4 className="fw-bold">Customer Support</h4>
+        <p className="text-muted">Reach our 24/7 helpline or chat with an agent for personalized assistance.</p>
+      </div>
+      <div className="col-md-3 mb-3">
+        <i className="fa-solid fa-file-contract fa-2x mb-3" style={{ color: "#0033A0" }}></i>
+        <h4 className="fw-bold">Guides & Policies</h4>
+        <p className="text-muted">Step-by-step application guides and detailed policy documents to keep you informed.</p>
+      </div>
+    </div>
+  </section>
+
+  {/* Why Choose Our Support */}
+  <section className="why-support p-5 bg-white">
+    <h2 className="text-center fw-semibold mb-4 text-primary">Why Our Support Stands Out</h2>
+    <div className="row text-center">
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-clock fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h5 className="fw-bold">24/7 Assistance</h5>
+        <p className="text-muted">Round-the-clock availability through phone, email, and live chat.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-language fa-2x mb-3" style={{ color: "#0095DA" }}></i>
+        <h5 className="fw-bold">Multi-Language Support</h5>
+        <p className="text-muted">Talk to our experts in the language you’re most comfortable with.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-bolt fa-2x mb-3" style={{ color: "#0033A0" }}></i>
+        <h5 className="fw-bold">Quick Resolutions</h5>
+        <p className="text-muted">Efficient ticketing system ensures faster turnaround times.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-mobile-screen-button fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h5 className="fw-bold">Mobile Banking Help</h5>
+        <p className="text-muted">Dedicated support for app users to resolve issues on the go.</p>
+      </div>
+    </div>
+  </section>
+
+  {/* Stats Section */}
+  <section className="stats-section p-5 text-center" style={{ backgroundColor: "#F4F8FB" }}>
+    <div className="row">
+      <div className="col-md-3">
+        <h2 className="fw-bold" style={{ color: "#0033A0" }}>95%</h2>
+        <p className="text-muted">Queries Resolved on First Contact</p>
+      </div>
+      <div className="col-md-3">
+        <h2 className="fw-bold" style={{ color: "#00A49A" }}>10,000+</h2>
+        <p className="text-muted">Daily Customer Interactions</p>
+      </div>
+      <div className="col-md-3">
+        <h2 className="fw-bold" style={{ color: "#0095DA" }}>4.8/5</h2>
+        <p className="text-muted">Average Customer Satisfaction Score</p>
+      </div>
+    </div>
+  </section>
+</div>}/>
+        <Route path="/services" element={<div className="services-container">
+  {/* Hero Section */}
+  <section className="services-hero text-center p-5" style={{ backgroundColor: "#0033A0", color: "white" }}>
+    <h1 className="fw-bold">Banking Services Tailored for You</h1>
+    <p className="lead" style={{ color: "#cce0ff" }}>
+      From everyday banking to premium financial solutions — we provide services that make managing your money simple, secure, and rewarding.
+    </p>
+  </section>
+
+  {/* Key Services */}
+  <section className="services-highlights p-5 bg-light">
+    <h2 className="text-center fw-semibold mb-5 text-primary">Our Core Services</h2>
+    <div className="row text-center">
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-building-columns fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h4 className="fw-bold">Personal Banking</h4>
+        <p className="text-muted">Savings, current accounts, and debit cards to meet your daily banking needs.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-briefcase fa-2x mb-3" style={{ color: "#0095DA" }}></i>
+        <h4 className="fw-bold">Business Banking</h4>
+        <p className="text-muted">Tailored financial solutions to support SMEs, corporates, and entrepreneurs.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-sack-dollar fa-2x mb-3" style={{ color: "#0033A0" }}></i>
+        <h4 className="fw-bold">Loans & Credit</h4>
+        <p className="text-muted">Home loans, personal loans, and credit facilities designed for your goals.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-globe fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h4 className="fw-bold">Global Banking</h4>
+        <p className="text-muted">Seamless international transfers, forex services, and global wealth solutions.</p>
+      </div>
+    </div>
+  </section>
+
+  {/* Why Choose Our Services */}
+  <section className="why-services p-5 bg-white">
+    <h2 className="text-center fw-semibold mb-4 text-primary">Why Choose Our Services?</h2>
+    <div className="row text-center">
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-lock fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h5 className="fw-bold">Secure & Trusted</h5>
+        <p className="text-muted">Bank with confidence backed by global security standards and compliance.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-mobile-screen fa-2x mb-3" style={{ color: "#0095DA" }}></i>
+        <h5 className="fw-bold">Digital First</h5>
+        <p className="text-muted">Mobile and online banking designed for convenience, speed, and reliability.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-people-group fa-2x mb-3" style={{ color: "#0033A0" }}></i>
+        <h5 className="fw-bold">Customer-Centric</h5>
+        <p className="text-muted">Personalized services with dedicated relationship managers.</p>
+      </div>
+      <div className="col-md-4 mb-4">
+        <i className="fa-solid fa-handshake fa-2x mb-3" style={{ color: "#00A49A" }}></i>
+        <h5 className="fw-bold">Partnership Approach</h5>
+        <p className="text-muted">We work with you to achieve your personal and business financial goals.</p>
+      </div>
+    </div>
+  </section>
+
+  {/* Stats Section */}
+  <section className="stats-section p-5 text-center" style={{ backgroundColor: "#F4F8FB" }}>
+    <div className="row">
+      <div className="col-md-3">
+        <h2 className="fw-bold" style={{ color: "#0033A0" }}>50+</h2>
+        <p className="text-muted">Years of Banking Excellence</p>
+      </div>
+      <div className="col-md-3">
+        <h2 className="fw-bold" style={{ color: "#00A49A" }}>10M+</h2>
+        <p className="text-muted">Customers Served Globally</p>
+      </div>
+      <div className="col-md-3">
+        <h2 className="fw-bold" style={{ color: "#0095DA" }}>100+</h2>
+        <p className="text-muted">Countries With Our Presence</p>
+      </div>
+    </div>
+  </section>
+</div>}/>
+        <Route path="/ApplicationStatus" element={<ApplicationStatus/>}/>
+        <Route path="/CreditCardOfferCustomer" element={<CreditCardOfferCustomer/>} />
+        <Route path="/CreditCardComparison" element={<CreditCardComparison/>} />
+        <Route path="/SalesApplicationTable" element={<SalesApplicationsTable/>} />
+      </Routes>
+      <Footer/>
+    
+    </>
+  );
+}
+ 
+export default App;
+ 
