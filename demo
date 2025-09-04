@@ -1,878 +1,178 @@
 import React, { useState } from "react";
-import { Modal, Button, Form, Alert } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
-import sclogo from "../assets/sclogo.png";
-import UnifiedLoginModalService from "../service/UnifiedLoginModalService";
+import { Link, useNavigate } from "react-router-dom";
+import logo from "../assets/sclogo.png";
+import ApplicationStatus from './ApplicationStatus';
+import CreditCardOfferCustomer from './CreditCardOfferCustomer';
 
-function UnifiedLoginModal({ show, onHide }) {
-  const [mode, setMode] = useState("customer"); // "customer" | "signup" | "sales"
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-    name: "",
-    email: "",
-    confirmPassword: "",
-  });
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [registeredUser, setRegisteredUser] = useState(null);
+function Header() {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const resetForm = () => {
-    setFormData({
-      username: "",
-      password: "",
-      name: "",
-      email: "",
-      confirmPassword: "",
-    });
-    setError("");
-    setSuccess("");
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    if (mode === "signup") {
-      if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-        setError("All fields are required.");
-        return;
-      }
-      if (formData.password !== formData.confirmPassword) {
-        setError("Passwords do not match.");
-        return;
-      }
-    
-      try {
-        const response = await UnifiedLoginModalService.signupCustomer({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-        });
-        console.log("signup response:", response);
-    
-        setSuccess("Account created successfully! Please login.");
-        setMode("customer");
-        resetForm();
-      } catch (err) {
-        setError(err.error || "Signup failed.");
-      }
-      return;
-    }
-
-    if (mode === "customer") {
-      if (!formData.username || !formData.password) {
-        setError("Both email and password are required.");
-        return;
-      }
-    
-      try {
-        const response = await UnifiedLoginModalService.loginCustomer({
-          username: formData.username,
-          password: formData.password,
-        });
-        console.log("customer login response:", response);
-    
-        setSuccess("Customer login successful!");
-        localStorage.setItem("customerToken", response.token); // save JWT
-        setTimeout(() => {
-          onHide();
-          navigate("/CreditCardApplicationForm");
-        }, 1500);
-      } catch (err) {
-        setError(err.error || "Invalid email or password.");
-      }
-      return;
-    }
-
-    if (mode === "sales") {
-      if (!formData.username || !formData.password) {
-        setError("Both username and password are required.");
-        return;
-      }
-      try{
-        const response = await UnifiedLoginModalService.loginSalesUser({
-          userId: formData.username,
-          password: formData.password,
-        });
-        console.log("sales login response:", response)
-
-      if (response.success){
-      setSuccess("Sales login successful!");
-      setTimeout(() => {
-        onHide();
-        navigate("/Onboarding"); // your sales route
-      }, 1500);
-    } else {
-      setError(response.message || "Invalid sales cred");
-    }
-  }
-     catch (err){
-      setError("Invalid sales credentials.")
-    }
-      return;
-    }
-  };
+  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
+  const closeDropdown = () => setDropdownOpen(false);
 
   return (
-    <Modal show={show} onHide={onHide} centered>
-      <Modal.Body style={{ width: "100%", maxWidth: "400px", margin: "auto" }}>
-        {/* Logo */}
-        <div className="text-center">
-          <img
-            src={sclogo}
-            alt="Standard Chartered"
-            style={{ width: "200px", marginBottom: "20px" }}
-          />
-          <h5 style={{ marginBottom: "20px" }}>
-            {mode === "customer" && "Customer Login"}
-            {mode === "signup" && "Customer Sign Up"}
-            {mode === "sales" && "Sales Login"}
-          </h5>
-        </div>
+    <>
+      <style>{`
+        body {
+          margin: 0;
+          font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+        }
+        .sc-navbar {
+          background: #fff;
+          border-bottom: 2px solid #ececec;
+          height: 80px;
+          display: flex;
+          align-items: center;
+          box-sizing: border-box;
+          padding: 0 40px;
+          justify-content: space-between;
+          color: #222;
+        }
+        .sc-navbar .navbar-left img {
+          height: 80px;
+          cursor: pointer;
+        }
+        .sc-navbar .navbar-center {
+          display: flex;
+          gap: 48px;
+          font-size: 18px;
+          font-weight: 500;
+          align-items: center;
+        }
+        .sc-navbar .navbar-center a {
+          color: #222;
+          text-decoration: none;
+          padding: 4px 8px;
+          border-radius: 5px;
+          transition: background 0.2s, color 0.2s;
+          cursor: pointer;
+        }
+        .sc-navbar .navbar-center a:hover,
+        .sc-navbar .navbar-center a:focus {
+          background: #f2f9ff;
+          color: #1976d2;
+        }
+        .sc-navbar .navbar-right {
+          position: relative;
+        }
+        .sc-navbar .dropdown-btn {
+          background: none;
+          border: none;
+          font-size: 18px;
+          font-weight: 500;
+          color: #222;
+          cursor: pointer;
+          padding: 8px 22px;
+          border-radius: 6px;
+          transition: background 0.2s;
+        }
+        .sc-navbar .dropdown-btn:hover,
+        .sc-navbar .dropdown-btn:focus {
+          background: #f1f1f1;
+          outline: none;
+        }
+        .sc-navbar .dropdown-content {
+          position: absolute;
+          right: 0;
+          top: 100%;
+          background: white;
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.07);
+          border-radius: 8px;
+          width: 180px;
+          margin-top: 8px;
+          z-index: 1000;
+          display: ${dropdownOpen ? "block" : "none"};
+          user-select: none;
+        }
+        .sc-navbar .dropdown-content a,
+        .sc-navbar .dropdown-content button {
+          display: block;
+          width: 100%;
+          padding: 12px 18px;
+          color: #222;
+          background: none;
+          border: none;
+          text-align: left;
+          font-size: 16px;
+          font-weight: 500;
+          text-decoration: none;
+          cursor: pointer;
+          border-radius: 5px;
+          transition: background 0.2s;
+        }
+        .sc-navbar .dropdown-content a:hover,
+        .sc-navbar .dropdown-content button:hover {
+          background: #f5faff;
+        }
+        .sc-navbar .login-btn {
+          background: #008000;
+          color: white;
+          border: none;
+          padding: 8px 24px;
+          border-radius: 5px;
+          font-size: 18px;
+          font-weight: 500;
+          cursor: pointer;
+          margin-left: 30px;
+          width: 100px;
+          user-select: none;
+        }
+      `}</style>
 
-        {/* Alerts */}
-        {error && <Alert variant="danger">{error}</Alert>}
-        {success && <Alert variant="success">{success}</Alert>}
-
-        <Form onSubmit={handleSubmit}>
-          {/* Customer Sign Up */}
-          {mode === "signup" && (
-            <>
-              <Form.Group className="mb-3">
-                <Form.Control
-                  type="text"
-                  name="name"
-                  placeholder="Full Name"
-                  value={formData.name}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Control
-                  type="email"
-                  name="email"
-                  placeholder="Email"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Control
-                  type="password"
-                  name="password"
-                  placeholder="Create Password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Control
-                  type="password"
-                  name="confirmPassword"
-                  placeholder="Confirm Password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </>
-          )}
-
-          {/* Customer Login */}
-          {mode === "customer" && (
-            <>
-              <Form.Group className="mb-3">
-                <Form.Control
-                  type="text"
-                  name="username"
-                  placeholder="Username (Email)"
-                  value={formData.username}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-              <Form.Group className="mb-2">
-                <Form.Control
-                  type="password"
-                  name="password"
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-              <div className="text-end mb-4">
-                <a href="#" style={{ fontSize: "0.9rem" }}>
-                  → Forgot Username / Password
-                </a>
-              </div>
-            </>
-          )}
-
-          {/* Sales Login */}
-          {mode === "sales" && (
-            <>
-              <Form.Group className="mb-3">
-                <Form.Control
-                  type="text"
-                  name="username"
-                  placeholder="Sales Username"
-                  value={formData.username}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-              <Form.Group className="mb-2">
-                <Form.Control
-                  type="password"
-                  name="password"
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </>
-          )}
-
-          {/* Buttons */}
-          <div className="d-flex gap-3">
-            <Button
-              type="submit"
-              style={{
-                flex: 1,
-                backgroundColor: "#0d6efd",
-                border: "none",
-                height: "45px",
-              }}
-            >
-              {mode === "signup"
-                ? "Sign Up"
-                : mode === "customer"
-                ? "Login"
-                : "Login"}
-            </Button>
-            {mode !== "sales" && (
-              <Button
-                type="button"
-                onClick={() => {
-                  resetForm();
-                  setMode(mode === "signup" ? "customer" : "signup");
-                }}
-                style={{
-                  flex: 1,
-                  backgroundColor: mode === "signup" ? "#0d6efd" : "#28a745",
-                  border: "none",
-                  height: "45px",
-                }}
-              >
-                {mode === "signup" ? "Login" : "Sign Up"}
-              </Button>
-            )}
-          </div>
-        </Form>
-
-        {/* Switch Links */}
-        <div className="text-center mt-3">
-          {mode !== "sales" ? (
-            <a
-              href="#"
-              onClick={() => {
-                resetForm();
-                setMode("sales");
-              }}
-              style={{ fontSize: "0.9rem", color: "#0d6efd" }}
-            >
-              Are you a sales user?
-            </a>
-          ) : (
-            <a
-              href="#"
-              onClick={() => {
-                resetForm();
-                setMode("customer");
-              }}
-              style={{ fontSize: "0.9rem", color: "#0d6efd" }}
-            >
-              ← Back to Customer Login
-            </a>
-          )}
-        </div>
-      </Modal.Body>
-    </Modal>
-  );
-}
-
-export default UnifiedLoginModal;
-
-import axios from "axios";
-import UnifiedLoginModal from "../components/UnifiedLoginModal";
-const API_BASE_URL = "http://localhost:8080";
-// Axios instance for customer APIs with JWT interceptor
-const customerAPI = axios.create({
-    baseURL: `${API_BASE_URL}/customer`,
-  });
-  
-  customerAPI.interceptors.request.use((req) => {
-    const token = localStorage.getItem("customerToken");
-    if (token) {
-      req.headers.Authorization = `Bearer ${token}`;
-    }
-    return req;
-  });
-
-const loginSalesUser = async (credentials) => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/salesuser/login`, {
-        userId: credentials.userId,   // must match SalesUser.java field
-        password: credentials.password
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Login failed:", error.response ? error.response.data : error.message);
-      throw error;
-    }
-  };
-  const signupCustomer = async (customerData) => {
-    try {
-      const response = await customerAPI.post(`/signup`, {
-             name: customerData.name,
-              email: customerData.email,
-              password: customerData.password,
-            });
-      return response.data;
-    } catch (error) {
-      console.error("Signup failed:", error.response ? error.response.data : error.message);
-      throw error.response?.data || { error: "Signup failed" };
-    }
-  };
-  const loginCustomer = async (credentials) => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/customer/login`, {
-        email: credentials.username,  // username is actually email
-        password: credentials.password,
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Login failed:", error.response ? error.response.data : error.message);
-      throw error.response?.data || { error: "Login failed" };
-    }
-  };
-  
-  const UnifiedLoginModalService = {
-    loginSalesUser,
-    signupCustomer,
-    loginCustomer,
-    customerAPI, 
-  };
-export default UnifiedLoginModalService;
-
-import React, { useState } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import { useNavigate } from "react-router-dom";
- 
-const creditCardTypes = [
-  { label: "Gold Card", value: "Gold Card" },
-  { label: "Platinum Card", value: "Platinum Card" },
-  { label: "Silver Card", value: "Silver Card" }
-];
- 
-const profileTypes = [
-  { label: "Existing Profile", value: "Existing Profile" },
-  { label: "New Profile", value: "New Profile" }
-];
- 
-const initialFormData = {
-  fullName: "",
-  phoneNumber: "",
-  email: "",
-  creditCardType: "",
-  idProof: null,
-  addressProof: null,
-  incomeProof: null,
-  profileType: ""
-};
- 
-function CreditCardApplicationForm() {
-  const [formData, setFormData] = useState(initialFormData);
-  const [submitted, setSubmitted] = useState(false);
-  const [finalSubmit, setFinalSubmit] = useState(false);
- 
-  // Handle input changes
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (files) {
-      setFormData({ ...formData, [name]: files[0] });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-  };
- 
-  // Form validation - basic required fields check
-  const validateForm = () => {
-    return (
-      formData.fullName.trim() &&
-      formData.phoneNumber.trim() &&
-      formData.email.trim() &&
-      formData.creditCardType.trim() &&
-      formData.idProof &&
-      formData.addressProof &&
-      formData.incomeProof &&
-      formData.profileType.trim()
-    );
-  };
- 
-  // Submit handler (move to confirmation)
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validateForm()) {
-      alert("Please fill all required fields and upload files.");
-      return;
-    }
-    setSubmitted(true);
-  };
- 
-  // Final submission after confirmation page
-  const handleFinalSubmit = () => {
-    setFinalSubmit(true);
-  };
- 
-  // Edit form - back to form page with data
-  const handleEdit = () => {
-    setSubmitted(false);
-    setFinalSubmit(false);
-  };
- 
-  // Go back to home (clear form & states)
-  const navigate = useNavigate();
-  const handleGoBack = () => {
-    setFormData(initialFormData);
-    setSubmitted(false);
-    setFinalSubmit(false);
-    navigate("/")
-  };
- 
-  // Helper function to display file name or placeholder
-  const fileNameOrPlaceholder = (file) =>
-    file ? file.name : "No file chosen";
- 
-  return (
-    <div
-      className="container py-4"
-      // Adjusted styles for centering and width coverage
-      style={{
-        maxWidth: "900px",
-        minWidth: "320px",
-        marginLeft: "auto",
-        marginRight: "auto",
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-        backgroundColor: "#ffffff",
-        boxShadow: "0 0 15px rgba(0,0,0,0.1)",
-        borderRadius: "8px",
-        padding: "30px 40px",
-        marginTop: "40px",
-        marginBottom: "40px"
-      }}
-    >
-      {/* Header */}
-      <h3
-        className="text-center mb-4"
-        style={{
-          fontWeight: "700",
-          color: "#313335ff",
-          letterSpacing: "1.2px"
-        }}
-      >
-        Credit Card Application Form
-      </h3>
- 
-      {!submitted && (
-        <>
-          {/* Application Form Header */}
-          <div className="rounded mb-3" style={{ backgroundColor: "#2d66e3ff", padding: "14px 20px" }}>
-            <h5 style={{ color: "white", fontWeight: "700" }}>
-              Application Form
-            </h5>
-            <small style={{ color: "#cce4f7" }}>
-              Please fill all required fields to complete your application
-            </small>
-          </div>
- 
-          <form
-            onSubmit={handleSubmit}
-            style={{ backgroundColor: "#f8f9fa", padding: "20px", borderRadius: "6px" }}
-          >
-            {/* Personal Information */}
-            <div className="mb-4">
-              <h5 style={{ borderLeft: "4px solid #138496", paddingLeft: "12px", color: "#222", fontWeight: "600" }}>
-                Personal Information
-              </h5>
-              <div className="row gy-3 mt-3">
-                <div className="col-md-6">
-                  <label htmlFor="fullName" className="form-label fw-semibold" style={{ color: "#222" }}>
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="fullName"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    placeholder="Enter your full name"
-                    required
-                    autoComplete="name"
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label htmlFor="phoneNumber" className="form-label fw-semibold" style={{ color: "#222" }}>
-                    Phone Number *
-                  </label>
-                  <input
-                    type="tel"
-                    className="form-control"
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleChange}
-                    placeholder="Enter your phone number"
-                    required
-                    pattern="[0-9]{10,15}"
-                    title="Please enter a valid phone number (10-15 digits)"
-                    autoComplete="tel"
-                  />
-                </div>
-              </div>
-              <div className="mt-3">
-                <label htmlFor="email" className="form-label fw-semibold" style={{ color: "#222" }}>
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  className="form-control"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Enter your email address"
-                  required
-                  autoComplete="email"
-                />
-              </div>
-            </div>
- 
-            {/* Product Selection */}
-            <div className="mb-4">
-              <h5 style={{ borderLeft: "4px solid #2978b5", paddingLeft: "12px", color: "#222", fontWeight: "600" }}>
-                Product Selection
-              </h5>
-              <label htmlFor="creditCardType" className="form-label fw-semibold mt-3" style={{ color: "#222" }}>
-                Credit Card Type *
-              </label>
-              <select
-                id="creditCardType"
-                name="creditCardType"
-                className="form-select"
-                value={formData.creditCardType}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select a credit card type</option>
-                {creditCardTypes.map((type) => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-            </div>
- 
-            {/* Document Upload */}
-            <div className="mb-4">
-              <h5 style={{ borderLeft: "4px solid #138496", paddingLeft: "12px", color: "#222", fontWeight: "600" }}>
-                Document Upload
-              </h5>
- 
-              <div className="row gy-3 mt-3">
-                <div className="col-md-4">
-                  <label className="form-label fw-semibold" style={{ color: "#222" }}>
-                    ID Proof *
-                  </label>
-                  <input
-                    type="file"
-                    className="form-control"
-                    accept=".jpg,.jpeg,.png,.pdf"
-                    name="idProof"
-                    onChange={handleChange}
-                    required
-                  />
-                  <small className="text-muted">{fileNameOrPlaceholder(formData.idProof)}</small>
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label fw-semibold" style={{ color: "#222" }}>
-                    Address Proof *
-                  </label>
-                  <input
-                    type="file"
-                    className="form-control"
-                    accept=".jpg,.jpeg,.png,.pdf"
-                    name="addressProof"
-                    onChange={handleChange}
-                    required
-                  />
-                  <small className="text-muted">{fileNameOrPlaceholder(formData.addressProof)}</small>
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label fw-semibold" style={{ color: "#222" }}>
-                    Income Proof *
-                  </label>
-                  <input
-                    type="file"
-                    className="form-control"
-                    accept=".jpg,.jpeg,.png,.pdf"
-                    name="incomeProof"
-                    onChange={handleChange}
-                    required
-                  />
-                  <small className="text-muted">{fileNameOrPlaceholder(formData.incomeProof)}</small>
-                </div>
-              </div>
-            </div>
- 
-            {/* Profile Information */}
-            <div className="mb-4">
-              <h5 style={{ borderLeft: "4px solid #2978b5", paddingLeft: "12px", color: "#222", fontWeight: "600" }}>
-                Profile Information
-              </h5>
-              <label htmlFor="profileType" className="form-label fw-semibold mt-3" style={{ color: "#222" }}>
-                Profile Type *
-              </label>
-              <select
-                id="profileType"
-                name="profileType"
-                className="form-select"
-                value={formData.profileType}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select profile type</option>
-                {profileTypes.map((pt) => (
-                  <option key={pt.value} value={pt.value}>
-                    {pt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
- 
-            {/* Submit Button */}
-            <div className="text-center">
-              <button type="submit" className="btn btn-success px-5 py-2 fw-semibold" style={{ fontSize: "1rem" }}>
-                Submit Application
-              </button>
-            </div>
- 
-            <p className="text-center mt-4 text-muted" style={{ fontSize: "0.85rem" }}>
-              By submitting this application, you agree to our Terms &amp; Conditions and Privacy
-              Policy. All applications are subject to credit approval. Processing time is typically 5-7
-              business days.
-            </p>
-          </form>
-        </>
-      )}
- 
-      {/* Confirmation Page */}
-      {submitted && (
+      <nav className="sc-navbar">
+        {/* Logo Left */}
         <div
-          className="p-4 rounded border"
-          style={{
-            backgroundColor: "#ffffff",
-            borderColor: "#c2e0c6",
-            boxShadow: "0 0 15px 2px #ceeac5"
-          }}
+          className="navbar-left"
+          onClick={() => navigate()}
+          style={{ cursor: "pointer" }}
         >
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h4 className="text-success fw-bold d-flex align-items-center mb-0">
-              <span
-                className="me-2"
-                style={{
-                  fontSize: "1.5rem",
-                  lineHeight: "1",
-                  userSelect: "none"
-                }}
-              >
-                &#x2714;
-              </span>
-              Application Submitted
-            </h4>
+          <img
+            src={logo}
+            alt="Standard Chartered Logo"
+          />
+        </div>
+
+        {/* Center Nav Links */}
+        <div className="navbar-center">
+          <Link to="/about">About Us</Link>
+          <Link to="/invest">Invest</Link>
+          <Link to="/offer">Offers</Link>
+          <Link to="/help">Help</Link>
+          <Link to="/services">Services</Link>
+        </div>
+
+        {/* Dropdown (Logout Menu) Right */}
+        <div className="navbar-right">
+          <button
+            className="dropdown-btn"
+            onClick={toggleDropdown}
+            aria-expanded={dropdownOpen}
+            aria-haspopup="true"
+          >
+            Logout ▾
+          </button>
+          <div className="dropdown-content" onMouseLeave={closeDropdown}>
+            <Link to="/ApplicationStatus" onClick={closeDropdown}>
+              Tracker
+            </Link>
+            <Link to="/CreditCardOfferCustomer" onClick={closeDropdown}>
+              Offer Status
+            </Link>
             <button
-              className="btn btn-primary btn-sm"
-              onClick={handleEdit}
-              style={{
-                backgroundColor: "#005b96",
-                borderColor: "#005b96"
+              onClick={() => {
+                closeDropdown();
+                navigate("/home");
               }}
-              tabIndex={0}
-              aria-label="Edit Application"
             >
-              Edit
+              Logout
             </button>
+            
           </div>
- 
-          <div>
-            <h5 className="fw-semibold mb-3" style={{ color: "#222" }}>
-              Application Details
-            </h5>
- 
-            {/* Personal Information */}
-            <div className="mb-4">
-              <h6 className="fw-semibold text-secondary mb-3">Personal Information</h6>
-              <div className="row">
-                <div className="col-sm-6">
-                  <p className="mb-1">
-                    <strong>Full Name</strong>
-                    <br />
-                    {formData.fullName || "-"}
-                  </p>
-                  <p>
-                    <strong>Email Address</strong>
-                    <br />
-                    {formData.email || "-"}
-                  </p>
-                </div>
-                <div className="col-sm-6">
-                  <p className="mb-1">
-                    <strong>Phone Number</strong>
-                    <br />
-                    {formData.phoneNumber || "-"}
-                  </p>
-                  <p>
-                    <strong>Profile Type</strong>
-                    <br />
-                    {formData.profileType || "-"}
-                  </p>
-                </div>
-              </div>
-            </div>
- 
-            {/* Product Information */}
-            <div className="mb-4">
-              <h6 className="fw-semibold text-secondary mb-3">Product Information</h6>
-              <p>
-                <input
-                  type="radio"
-                  checked
-                  readOnly
-                  aria-label={`Selected Product: ${formData.creditCardType}`}
-                />{" "}
-                {formData.creditCardType || "-"}
-              </p>
-            </div>
- 
-           {/* Documentation */}
-<div className="mb-4">
-  <h6 className="fw-semibold text-secondary mb-3">Documentation</h6>
-  <div className="row text-secondary">
-    <div className="col-sm-4 mb-2">
-      <strong>ID Proof</strong>
-      <br />
-      {formData.idProof ? (
-        <>
-          Submitted{" "}
-          <a
-            href={URL.createObjectURL(formData.idProof)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-sm btn-outline-primary ms-2"
-          >
-            View
-          </a>
-        </>
-      ) : (
-        "Not Submitted"
-      )}
-    </div>
- 
-    <div className="col-sm-4 mb-2">
-      <strong>Address Proof</strong>
-      <br />
-      {formData.addressProof ? (
-        <>
-          Submitted{" "}
-          <a
-            href={URL.createObjectURL(formData.addressProof)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-sm btn-outline-primary ms-2"
-          >
-            View
-          </a>
-        </>
-      ) : (
-        "Not Submitted"
-      )}
-    </div>
- 
-    <div className="col-sm-4 mb-2">
-      <strong>Income Proof</strong>
-      <br />
-      {formData.incomeProof ? (
-        <>
-          Submitted{" "}
-          <a
-            href={URL.createObjectURL(formData.incomeProof)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-sm btn-outline-primary ms-2"
-          >
-            View
-          </a>
-        </>
-      ) : (
-        "Not Submitted"
-      )}
-    </div>
-  </div>
-</div>
- 
-{finalSubmit ? (
-  <>
-    <div className="alert alert-success text-center py-3" role="alert" style={{ fontWeight: "600" }}>
-      Application Submitted Successfully
-    </div>
-    <div className="text-center mt-3">
-      <button
-        onClick={handleGoBack}
-        className="btn btn-success px-4"
-        aria-label="Go Back to Home"
-      >
-        Go Back to Home
-      </button>
-    </div>
-  </>
-) : (
-  <div className="d-flex justify-content-center gap-3 flex-wrap mt-4">
-    <button
-      onClick={handleFinalSubmit}
-      className="btn btn-success px-4 fw-semibold"
-      aria-label="Confirm and Final Submit Application"
-    >
-      Final Submit
-    </button>
-    <button
-      onClick={handleGoBack}
-      className="btn btn-success px-4"
-      aria-label="Go Back to Home"
-    >
-      Go Back to Home
-    </button>
-  </div>
-)}
-    </div>
-    </div>
-      )}
-      </div>
+        </div>
+      </nav>
+    </>
   );
 }
- 
-export default CreditCardApplicationForm;
+
+export default Header;
