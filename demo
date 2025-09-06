@@ -1,232 +1,48 @@
-import React from "react";
-import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
-import "../ApplicationStatus.css";
+package com.scb.creditcardorigination.TransactionProcessingSystem.controller;
 
-const ApplicationStatus = () => {
-  const steps = [
-    {
-      title: "Application Submitted",
-      description: "Your credit card application has been successfully received",
-      date: "Dec 15, 2024",
-      completed: true,
-    },
-    {
-      title: "Application Processing",
-      description: "We are reviewing your application and verifying your information",
-      date: "Dec 16, 2024",
-      completed: true,
-    },
-    {
-      title: "Credit Card Offered",
-      description: "Congratulations! Your application has been approved",
-      date: "Dec 18, 2024",
-      completed: true,
-    },
-    {
-      title: "Application Accepted",
-      description: "Accept your offer to receive your new credit card",
-      date: "Waiting for your action",
-      completed: false,
-      highlight: true,
-    },
-    {
-      title: "Printed",
-      description: "Card is being Printed",
-      date: "",
-      completed: false,
-      highlight: true,
-    },
-    {
-      title: "Shipped",
-      description: "Card has been dispatched for delivery ",
-      date: "",
-      completed: false,
-      highlight: true,
-    },
-  ];
+import com.scb.creditcardorigination.TransactionProcessingSystem.model.Transaction;
+import com.scb.creditcardorigination.TransactionProcessingSystem.service.TransactionService;
+import org.springframework.web.bind.annotation.*;
 
-  const completedSteps = steps.filter((s) => s.completed).length;
-  const totalSteps = steps.length;
+import java.util.List;
+import java.util.Map;
+@CrossOrigin(origins = "http://localhost:3000")
+@RestController
+@RequestMapping("/api/transactions")
+public class TransactionController {
+    private final TransactionService transactionService;
 
-  return (
-    <div className="status-container">
-      <h3 className="status-header">Credit Card Application Status</h3>
-      <p className="status-subtitle">
-        Track your application progress. We'll keep you updated at every step.
-      </p>
+    public TransactionController(TransactionService transactionService) {
+        this.transactionService = transactionService;
+    }
 
-      {/* Progress Bar */}
-      <div className="progress-box">
-        <div className="progress-header">
-          <span>Overall Progress</span>
-          <span className="progress-label">In Progress</span>
-        </div>
-        <div className="progress-bar">
-          <div
-            className="progress-fill"
-            style={{ width: `${(completedSteps / totalSteps) * 100}%` }}
-          ></div>
-        </div>
-        <p className="progress-info">
-          Step {completedSteps} of {totalSteps} completed
-        </p>
-      </div>
+    @PostMapping("/create")
+    public Transaction createTransaction(@RequestBody Transaction transaction) {
+        return transactionService.saveTransaction(transaction);
+    }
+    //    {
+//        "customerId": 1005,
+//            "name": "saba",
+//            "dob": "2003-04-29",
+//            "email": "saba@example.com",
+//            "phone": "+91-9876112233",
+//            "creditScore": 720,
+//            "product": "Gold Rewards Card",
+//            "validityPeriod": "2025-2030",
+//            "creditLimit": "₹1,80,000",
+//            "status": "Approved" ,
+//            "processed_by" :"System -auto- decision",
+//            "Application-Timeline" :"Printed"
+//
+//    }
+    @GetMapping("/all")
+    public List<Transaction> getAllTransactions() {
+        return transactionService.getAllTransactions();
+    }
 
-      {/* Timeline */}
-      <h4 className="timeline-title">Application Timeline</h4>
-      <div className="timeline">
-        {steps.map((step, index) => (
-          <div className="timeline-step" key={index}>
-            <div className="timeline-icon">
-              {step.completed ? (
-                <FaCheckCircle className="icon completed" />
-              ) : (
-                <FaRegCircle className="icon pending" />
-              )}
-              {index !== steps.length - 1 && <div className="timeline-line"></div>}
-            </div>
-            <div className="timeline-content">
-              <div className="timeline-top">
-                <div
-                  className={`timeline-title-text ${
-                    step.highlight ? "highlight" : ""
-                  }`}
-                >
-                  {step.title}
-                  {step.highlight && (
-                    <span className="badge-action">Action Required</span>
-                  )}
-                </div>
-                <div className="timeline-date">{step.date}</div>
-              </div>
-              <div className="timeline-desc">{step.description}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Final Action Box */}
-      
-    </div>
-  );
-};
-
-export default ApplicationStatus;
-
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import "./SalesApplicationTable.css";
-
-function SalesApplicationsTable() {
-  const [applications, setApplications] = useState([]);
-
-
-  const timelineStages = [
-    "Application Submitted",
-    "Application Processing",
-    "Credit Card Offered",
-    "Application Accepted",
-    "Printed",
-    "Shipped",
-  ];
-
-  
-  useEffect(() => {
-    axios
-      .get("http://localhost:8080/api/transactions/all")
-      .then((response) => {
-        setApplications(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching transactions:", error);
-      });
-  }, []);
-
- 
-  const handleTimelineChange = (id, newTimeline) => {
-   
-    setApplications((prevApps) =>
-      prevApps.map((app) =>
-        app.id === id ? { ...app, applicationTimeline: newTimeline } : app
-      )
-    );
-
-   
-    axios
-      .put(`http://localhost:8080/api/transactions/${id}/timeline`, {
-        applicationTimeline: newTimeline,
-      })
-      .then((response) => {
-        console.log("Timeline updated in DB:", response.data);
-      })
-      .catch((error) => {
-        console.error("Error updating timeline:", error);
-      });
-  };
-
-  return (
-    <div className="sc-container">
-      <h2 className="sc-title">Customer Credit Card Applications</h2>
-
-      {applications.length > 0 ? (
-        <div className="sc-table-wrapper">
-          <table className="sc-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Customer Name</th>
-                <th>DOB</th>
-                <th>Email</th>
-                <th>Contact</th>
-                <th>Credit Score</th>
-                <th>Product</th>
-                <th>Status</th>
-                <th>Credit Limit</th>
-                <th>Approval Date</th>
-                <th>Processed By</th>
-                <th>Application Timeline</th>
-              </tr>
-            </thead>
-            <tbody>
-              {applications.map((app) => (
-                <tr key={app.id}>
-                  <td>{app.id}</td>
-                  <td>{app.name}</td>
-                  <td>{app.dob}</td>
-                  <td>{app.email}</td>
-                  <td>{app.phone}</td>
-                  <td>{app.creditScore}</td>
-                  <td>{app.product}</td>
-                  <td className={`status ${app.status?.toLowerCase()}`}>
-                    {app.status}
-                  </td>
-                  <td>{app.creditLimit}</td>
-                  <td>{app.approvalDate}</td>
-                  <td>{app.processedBy}</td>
-                  <td>
-                    <select
-                      value={app.applicationTimeline || "Application Submitted"}
-                      onChange={(e) =>
-                        handleTimelineChange(app.id, e.target.value)
-                      }
-                    >
-                      {timelineStages.map((stage, index) => (
-                        <option key={index} value={stage}>
-                          {stage}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <p className="sc-empty">No applications found.</p>
-      )}
-    </div>
-  );
+    @PutMapping("/{id}/timeline")
+    public Transaction updateTimeline(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        String newTimeline = request.get("applicationTimeline");
+        return transactionService.updateTimeline(id, newTimeline);
+    }
 }
-
-export default SalesApplicationsTable;
