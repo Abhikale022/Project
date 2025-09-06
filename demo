@@ -1,52 +1,20 @@
-package com.scb.creditcardorigination.customerLoginSignup.Service;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 
-import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
+@Configuration
+public class SecurityConfig {
 
-
-public interface CustomerLoginSignupService {
-    CustomerLoginSignup register(CustomerLoginSignup Customer);
-    CustomerLoginSignup login(String email, String password);
-}
-
-
-package com.scb.creditcardorigination.customerLoginSignup.Service;
-
-import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
-import com.scb.creditcardorigination.customerLoginSignup.Repository.CustomerLoginSignupRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-@Service
-public class CustomerLoginSignupServiceImpl implements CustomerLoginSignupService{
-    private final CustomerLoginSignupRepository repository;
-    private final PasswordEncoder passwordEncoder;
-
-    public CustomerLoginSignupServiceImpl(CustomerLoginSignupRepository repository,
-                                          PasswordEncoder passwordEncoder) {
-        this.repository = repository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    @Override
-    public CustomerLoginSignup register(CustomerLoginSignup customer) {
-        if (repository.findByEmail(customer.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already registered");
-        }
-        // Hash the password before saving
-        customer.setPassword(passwordEncoder.encode(customer.getPassword()));
-        return repository.save(customer);
-    }
-
-    @Override
-    public CustomerLoginSignup login(String email, String rawPassword) {
-        CustomerLoginSignup customer = repository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
-
-        // Compare hashed password with raw password
-        if (!passwordEncoder.matches(rawPassword, customer.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
-        }
-
-        return customer;
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf().disable() // 🔑 disable CSRF so POST/PUT/DELETE work in Postman
+            .authorizeHttpRequests(auth -> auth
+                .anyRequest().permitAll() // allow all requests without auth
+            )
+            .formLogin().disable()
+            .httpBasic().disable();
+        return http.build();
     }
 }
