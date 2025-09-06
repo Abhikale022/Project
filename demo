@@ -1,175 +1,308 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import logo from "../assets/sclogo.png";
-import UnifiedLoginModalService from "../service/UnifiedLoginModalService"; // ✅ import service
+import { Modal, Button, Form, Alert } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import sclogo from "../assets/sclogo.png";
+import UnifiedLoginModalService from "../service/UnifiedLoginModalService";
 
-function Header() {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+function UnifiedLoginModal({ show, onHide }) {
+  const [mode, setMode] = useState("customer"); // "customer" | "signup" | "sales"
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+    name: "",
+    email: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [registeredUser, setRegisteredUser] = useState(null);
   const navigate = useNavigate();
 
-  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
-  const closeDropdown = () => setDropdownOpen(false);
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  const handleLogout = () => {
-    // ✅ remove JWT token
-    UnifiedLoginModalService.logoutCustomer();
-    closeDropdown();
-    navigate("/"); // redirect to login page
+  const resetForm = () => {
+    setFormData({
+      username: "",
+      password: "",
+      name: "",
+      email: "",
+      confirmPassword: "",
+    });
+    setError("");
+    setSuccess("");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (mode === "signup") {
+      if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+        setError("All fields are required.");
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError("Passwords do not match.");
+        return;
+      }
+    
+      try {
+        const response = await UnifiedLoginModalService.signupCustomer({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        });
+        console.log("signup response:", response);
+    
+        setSuccess("Account created successfully! Please login.");
+        setMode("customer");
+        resetForm();
+      } catch (err) {
+        setError(err.error || "Signup failed.");
+      }
+      return;
+    }
+
+    if (mode === "customer") {
+      if (!formData.username || !formData.password) {
+        setError("Both email and password are required.");
+        return;
+      }
+    
+      try {
+        const response = await UnifiedLoginModalService.loginCustomer({
+          username: formData.username,
+          password: formData.password,
+        });
+        console.log("customer login response:", response);
+    
+        setSuccess("Customer login successful!");
+        localStorage.setItem("customerToken", response.token); // save JWT
+        setTimeout(() => {
+          onHide();
+          navigate("/CreditCardApplicationForm");
+        }, 1500);
+      } catch (err) {
+        setError(err.error || "Invalid email or password.");
+      }
+      return;
+    }
+
+    if (mode === "sales") {
+      if (!formData.username || !formData.password) {
+        setError("Both username and password are required.");
+        return;
+      }
+      try{
+        const response = await UnifiedLoginModalService.loginSalesUser({
+          userId: formData.username,
+          password: formData.password,
+        });
+        console.log("sales login response:", response)
+
+      if (response.success){
+      setSuccess("Sales login successful!");
+      setTimeout(() => {
+        onHide();
+        navigate("/Onboarding"); // your sales route
+      }, 1500);
+    } else {
+      setError(response.message || "Invalid sales cred");
+    }
+  }
+     catch (err){
+      setError("Invalid sales credentials.")
+    }
+      return;
+    }
   };
 
   return (
-    <>
-      <style>{`
-        body {
-          margin: 0;
-          font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
-        }
-        .sc-navbar {
-          background: #fff;
-          border-bottom: 2px solid #ececec;
-          height: 80px;
-          display: flex;
-          align-items: center;
-          box-sizing: border-box;
-          padding: 0 40px;
-          justify-content: space-between;
-          color: #222;
-        }
-        .sc-navbar .navbar-left img {
-          height: 80px;
-          cursor: pointer;
-        }
-        .sc-navbar .navbar-center {
-          display: flex;
-          gap: 48px;
-          font-size: 18px;
-          font-weight: 500;
-          align-items: center;
-        }
-        .sc-navbar .navbar-center a {
-          color: #222;
-          text-decoration: none;
-          padding: 4px 8px;
-          border-radius: 5px;
-          transition: background 0.2s, color 0.2s;
-          cursor: pointer;
-        }
-        .sc-navbar .navbar-center a:hover,
-        .sc-navbar .navbar-center a:focus {
-          background: #f2f9ff;
-          color: #1976d2;
-        }
-        .sc-navbar .navbar-right {
-          position: relative;
-        }
-        .sc-navbar .dropdown-btn {
-          background: none;
-          border: none;
-          font-size: 18px;
-          font-weight: 500;
-          color: #222;
-          cursor: pointer;
-          padding: 8px 22px;
-          border-radius: 6px;
-          transition: background 0.2s;
-        }
-        .sc-navbar .dropdown-btn:hover,
-        .sc-navbar .dropdown-btn:focus {
-          background: #f1f1f1;
-          outline: none;
-        }
-        .sc-navbar .dropdown-content {
-          position: absolute;
-          right: 0;
-          top: 100%;
-          background: white;
-          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.07);
-          border-radius: 8px;
-          width: 180px;
-          margin-top: 8px;
-          z-index: 1000;
-          display: ${dropdownOpen ? "block" : "none"};
-          user-select: none;
-        }
-        .sc-navbar .dropdown-content a,
-        .sc-navbar .dropdown-content button {
-          display: block;
-          width: 100%;
-          padding: 12px 18px;
-          color: #222;
-          background: none;
-          border: none;
-          text-align: left;
-          font-size: 16px;
-          font-weight: 500;
-          text-decoration: none;
-          cursor: pointer;
-          border-radius: 5px;
-          transition: background 0.2s;
-        }
-        .sc-navbar .dropdown-content a:hover,
-        .sc-navbar .dropdown-content button:hover {
-          background: #f5faff;
-        }
-        .sc-navbar .login-btn {
-          background: #008000;
-          color: white;
-          border: none;
-          padding: 8px 24px;
-          border-radius: 5px;
-          font-size: 18px;
-          font-weight: 500;
-          cursor: pointer;
-          margin-left: 30px;
-          width: 100px;
-          user-select: none;
-        }
-      `}</style>
-
-      <nav className="sc-navbar">
-        {/* Logo Left */}
-        <div
-          className="navbar-left"
-          onClick={() => navigate("/")}
-          style={{ cursor: "pointer" }}
-        >
-          <img src={logo} alt="Standard Chartered Logo" />
+    <Modal show={show} onHide={onHide} centered>
+      <Modal.Body style={{ width: "100%", maxWidth: "400px", margin: "auto" }}>
+        {/* Logo */}
+        <div className="text-center">
+          <img
+            src={sclogo}
+            alt="Standard Chartered"
+            style={{ width: "200px", marginBottom: "20px" }}
+          />
+          <h5 style={{ marginBottom: "20px" }}>
+            {mode === "customer" && "Customer Login"}
+            {mode === "signup" && "Customer Sign Up"}
+            {mode === "sales" && "Sales Login"}
+          </h5>
         </div>
 
-        {/* Center Nav Links */}
-        <div className="navbar-center">
-          <Link to="/about">About Us</Link>
-          <Link to="/invest">Invest</Link>
-          <Link to="/offer">Offers</Link>
-          <Link to="/help">Help</Link>
-          <Link to="/services">Services</Link>
-        </div>
+        {/* Alerts */}
+        {error && <Alert variant="danger">{error}</Alert>}
+        {success && <Alert variant="success">{success}</Alert>}
 
-        {/* Dropdown (Logout Menu) Right */}
-        <div className="navbar-right">
-          <button
-            className="dropdown-btn"
-            onClick={toggleDropdown}
-            aria-expanded={dropdownOpen}
-            aria-haspopup="true"
-          >
-            Logout ▾
-          </button>
-          <div className="dropdown-content" onMouseLeave={closeDropdown}>
-            <Link to="/ApplicationStatus" onClick={closeDropdown}>
-              Tracker
-            </Link>
-            <Link to="/CreditCardOfferCustomer" onClick={closeDropdown}>
-              Offer Status
-            </Link>
-            <button onClick={handleLogout}>
-              Logout
-            </button>
+        <Form onSubmit={handleSubmit}>
+          {/* Customer Sign Up */}
+          {mode === "signup" && (
+            <>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="text"
+                  name="name"
+                  placeholder="Full Name"
+                  value={formData.name}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="password"
+                  name="password"
+                  placeholder="Create Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="password"
+                  name="confirmPassword"
+                  placeholder="Confirm Password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+            </>
+          )}
+
+          {/* Customer Login */}
+          {mode === "customer" && (
+            <>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="text"
+                  name="username"
+                  placeholder="Username (Email)"
+                  value={formData.username}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-2">
+                <Form.Control
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <div className="text-end mb-4">
+                <a href="#" style={{ fontSize: "0.9rem" }}>
+                  → Forgot Username / Password
+                </a>
+              </div>
+            </>
+          )}
+
+          {/* Sales Login */}
+          {mode === "sales" && (
+            <>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="text"
+                  name="username"
+                  placeholder="Sales Username"
+                  value={formData.username}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-2">
+                <Form.Control
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+            </>
+          )}
+
+          {/* Buttons */}
+          <div className="d-flex gap-3">
+            <Button
+              type="submit"
+              style={{
+                flex: 1,
+                backgroundColor: "#0d6efd",
+                border: "none",
+                height: "45px",
+              }}
+            >
+              {mode === "signup"
+                ? "Sign Up"
+                : mode === "customer"
+                ? "Login"
+                : "Login"}
+            </Button>
+            {mode !== "sales" && (
+              <Button
+                type="button"
+                onClick={() => {
+                  resetForm();
+                  setMode(mode === "signup" ? "customer" : "signup");
+                }}
+                style={{
+                  flex: 1,
+                  backgroundColor: mode === "signup" ? "#0d6efd" : "#28a745",
+                  border: "none",
+                  height: "45px",
+                }}
+              >
+                {mode === "signup" ? "Login" : "Sign Up"}
+              </Button>
+            )}
           </div>
+        </Form>
+
+        {/* Switch Links */}
+        <div className="text-center mt-3">
+          {mode !== "sales" ? (
+            <a
+              href="#"
+              onClick={() => {
+                resetForm();
+                setMode("sales");
+              }}
+              style={{ fontSize: "0.9rem", color: "#0d6efd" }}
+            >
+              Are you a sales user?
+            </a>
+          ) : (
+            <a
+              href="#"
+              onClick={() => {
+                resetForm();
+                setMode("customer");
+              }}
+              style={{ fontSize: "0.9rem", color: "#0d6efd" }}
+            >
+              ← Back to Customer Login
+            </a>
+          )}
         </div>
-      </nav>
-    </>
+      </Modal.Body>
+    </Modal>
   );
 }
 
-export default Header;
+export default UnifiedLoginModal;
