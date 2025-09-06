@@ -1,22 +1,38 @@
-@Override
-public String generateResetCode(String email) {
-    CustomerLoginSignup customer = repository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("Email not registered"));
+@PostMapping("/forgot-password")
+public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+    try {
+        String email = request.get("email");
+        String code = signupService.generateResetCode(email);
 
-    // Generate a 6-digit numeric code
-    String code = String.valueOf((int)(Math.random() * 900000) + 100000);
-    customer.setResetCode(code);
-    repository.save(customer);
+        // Return code directly (for dev/testing)
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Reset code generated");
+        response.put("resetCode", code); 
+        return ResponseEntity.ok(response);
 
-    return code; // For dev/testing, return code in response
+    } catch (RuntimeException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
 }
 
-@Override
-public void resetPassword(String email, String code, String newPassword) {
-    CustomerLoginSignup customer = repository.findByEmailAndResetCode(email, code)
-            .orElseThrow(() -> new RuntimeException("Invalid reset code"));
+@PostMapping("/reset-password")
+public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+    try {
+        String email = request.get("email");
+        String code = request.get("resetCode");
+        String newPassword = request.get("newPassword");
 
-    customer.setPassword(passwordEncoder.encode(newPassword));
-    customer.setResetCode(null); // invalidate code
-    repository.save(customer);
+        signupService.resetPassword(email, code, newPassword);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Password reset successful");
+        return ResponseEntity.ok(response);
+
+    } catch (RuntimeException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
 }
