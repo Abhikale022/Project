@@ -1,185 +1,43 @@
-package com.scb.creditcardorigination.customerLoginSignup.Controller;
-
-import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
-import com.scb.creditcardorigination.customerLoginSignup.Service.CustomerLoginSignupService;
-import com.scb.creditcardorigination.customerLoginSignup.Service.CustomUserDetailsService;
-import com.scb.creditcardorigination.customerLoginSignup.Service.JwtUtil;
-import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
-@CrossOrigin(origins="http://localhost:3000")
-@RestController
-@RequestMapping("/customer")
-public class CustomerAuthController {
-
-    private final AuthenticationManager authenticationManager;
-    private final CustomUserDetailsService userDetailsService;
-    private final JwtUtil jwtUtil;
-    private final CustomerLoginSignupService signupService;
-
-    @Autowired
-    public CustomerAuthController(AuthenticationManager authenticationManager,
-                                  CustomUserDetailsService userDetailsService,
-                                  JwtUtil jwtUtil,
-                                  CustomerLoginSignupService signupService) {
-        this.authenticationManager = authenticationManager;
-        this.userDetailsService = userDetailsService;
-        this.jwtUtil = jwtUtil;
-        this.signupService = signupService;
-    }
-
-    // DTO for login request
-    public static class LoginRequest {
-        @NotBlank
-        private String email;
-        @NotBlank
-        private String password;
-
-        // getters and setters
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
-    }
-
-    // =================== SIGNUP ===================
-    @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody CustomerLoginSignup customer) {
-        try {
-            CustomerLoginSignup saved = signupService.register(customer);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Signup successful");
-            response.put("customerId", saved.getId());
-            response.put("email", saved.getEmail());
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (RuntimeException ex) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", ex.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
-        } catch (Exception ex) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Something went wrong: " + ex.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-        }
-    }
-
-    // =================== LOGIN ===================
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-            );
-
-            UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-            String token = jwtUtil.generateToken(userDetails);
-
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Login successful");
-            response.put("token", token);
-
-            return ResponseEntity.ok(response);
-
-        } catch (BadCredentialsException ex) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Invalid email or password");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-        } catch (Exception ex) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Something went wrong: " + ex.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-        }
-    }
-}
-
 package com.scb.creditcardorigination.customerLoginSignup.Model;
 
 import jakarta.persistence.*;
 
 @Entity
-    @Table(name = "customer_login_signup")
-    public class CustomerLoginSignup {
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
+@Table(name = "customer_login_signup")
+public class CustomerLoginSignup {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-        @Column(nullable = false)
-        private String name;
+    @Column(nullable = false)
+    private String name;
 
-        @Column(nullable = false, unique = true)
-        private String email;
+    @Column(nullable = false, unique = true)
+    private String email;
 
-        @Column(nullable = false)
-        private String password;
+    @Column(nullable = false)
+    private String password;
 
-        public CustomerLoginSignup() {}
+    // New field for temporary reset code
+    private String resetCode;
 
-        public CustomerLoginSignup(String name, String email, String password) {
-            this.name = name;
-            this.email = email;
-            this.password = password;
-        }
+    public CustomerLoginSignup() {}
 
-        // Getters & Setters
-        public Long getId() { return id; }
-        public void setId(Long id) { this.id = id; }
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
+    public CustomerLoginSignup(String name, String email, String password) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
     }
 
-package com.scb.creditcardorigination.customerLoginSignup.Service;
-
-import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
-import com.scb.creditcardorigination.customerLoginSignup.Repository.CustomerLoginSignupRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-@Service
-public class CustomerLoginSignupServiceImpl implements CustomerLoginSignupService{
-    private final CustomerLoginSignupRepository repository;
-    private final PasswordEncoder passwordEncoder;
-
-    public CustomerLoginSignupServiceImpl(CustomerLoginSignupRepository repository,
-                                          PasswordEncoder passwordEncoder) {
-        this.repository = repository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    @Override
-    public CustomerLoginSignup register(CustomerLoginSignup customer) {
-        if (repository.findByEmail(customer.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already registered");
-        }
-        // Hash the password before saving
-        customer.setPassword(passwordEncoder.encode(customer.getPassword()));
-        return repository.save(customer);
-    }
-
-    @Override
-    public CustomerLoginSignup login(String email, String rawPassword) {
-        CustomerLoginSignup customer = repository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
-
-        // Compare hashed password with raw password
-        if (!passwordEncoder.matches(rawPassword, customer.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
-        }
-
-        return customer;
-    }
+    // Getters & Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+    public String getResetCode() { return resetCode; }
+    public void setResetCode(String resetCode) { this.resetCode = resetCode; }
 }
