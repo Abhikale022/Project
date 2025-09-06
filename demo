@@ -88,7 +88,6 @@ public class CustomerAuthController {
             Map<String, String> response = new HashMap<>();
             response.put("message", "Login successful");
             response.put("token", token);
-            response.put("id", customerLoginSignup.getId());
 
             return ResponseEntity.ok(response);
 
@@ -101,5 +100,86 @@ public class CustomerAuthController {
             error.put("error", "Something went wrong: " + ex.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
+    }
+}
+
+package com.scb.creditcardorigination.customerLoginSignup.Model;
+
+import jakarta.persistence.*;
+
+@Entity
+    @Table(name = "customer_login_signup")
+    public class CustomerLoginSignup {
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
+
+        @Column(nullable = false)
+        private String name;
+
+        @Column(nullable = false, unique = true)
+        private String email;
+
+        @Column(nullable = false)
+        private String password;
+
+        public CustomerLoginSignup() {}
+
+        public CustomerLoginSignup(String name, String email, String password) {
+            this.name = name;
+            this.email = email;
+            this.password = password;
+        }
+
+        // Getters & Setters
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+    }
+
+package com.scb.creditcardorigination.customerLoginSignup.Service;
+
+import com.scb.creditcardorigination.customerLoginSignup.Model.CustomerLoginSignup;
+import com.scb.creditcardorigination.customerLoginSignup.Repository.CustomerLoginSignupRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+public class CustomerLoginSignupServiceImpl implements CustomerLoginSignupService{
+    private final CustomerLoginSignupRepository repository;
+    private final PasswordEncoder passwordEncoder;
+
+    public CustomerLoginSignupServiceImpl(CustomerLoginSignupRepository repository,
+                                          PasswordEncoder passwordEncoder) {
+        this.repository = repository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Override
+    public CustomerLoginSignup register(CustomerLoginSignup customer) {
+        if (repository.findByEmail(customer.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already registered");
+        }
+        // Hash the password before saving
+        customer.setPassword(passwordEncoder.encode(customer.getPassword()));
+        return repository.save(customer);
+    }
+
+    @Override
+    public CustomerLoginSignup login(String email, String rawPassword) {
+        CustomerLoginSignup customer = repository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+
+        // Compare hashed password with raw password
+        if (!passwordEncoder.matches(rawPassword, customer.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        return customer;
     }
 }
