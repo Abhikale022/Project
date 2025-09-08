@@ -1,71 +1,22 @@
-import axios from "axios";
-const API_BASE_URL = "http://localhost:8080";
+-- Offers table
+CREATE TABLE offers (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    application_id VARCHAR(20) NOT NULL,
+    card_name VARCHAR(100) NOT NULL,
+    credit_limit DECIMAL(15,2) NOT NULL,
+    interest_rate DECIMAL(5,2) NOT NULL,
+    credit_score INT,
+    FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
+);
 
-const customerAPI = axios.create({
-  baseURL: `${API_BASE_URL}/customer`,
-});
-
-customerAPI.interceptors.request.use((req) => {
-  const token = localStorage.getItem("customerToken");
-  if (token) {
-    req.headers.Authorization = `Bearer ${token}`;
-  }
-  return req;
-});
-
-// --- Existing ---
-const loginSalesUser = async (credentials) => {
-  const response = await axios.post(`${API_BASE_URL}/salesuser/login`, {
-    userId: credentials.userId,
-    password: credentials.password,
-  });
-  return response.data;
-};
-
-const signupCustomer = async (customerData) => {
-  const response = await customerAPI.post(`/signup`, {
-    name: customerData.name,
-    email: customerData.email,
-    password: customerData.password,
-  });
-  return response.data;
-};
-
-const loginCustomer = async (credentials) => {
-  const response = await axios.post(`${API_BASE_URL}/customer/login`, {
-    email: credentials.username,
-    password: credentials.password,
-  });
-  return response.data;
-};
-
-const logoutCustomer = () => {
-  localStorage.removeItem("customerToken");
-};
-
-// --- New Forgot/Reset Password ---
-const forgotPassword = async (email) => {
-  const response = await axios.post(`${API_BASE_URL}/customer/forgot-password`, { email });
-  return response.data;
-};
-
-const resetPassword = async ({ email, resetCode, newPassword }) => {
-  const response = await axios.post(`${API_BASE_URL}/customer/reset-password`, {
-    email,
-    resetCode,
-    newPassword,
-  });
-  return response.data;
-};
-
-const UnifiedLoginModalService = {
-  loginSalesUser,
-  signupCustomer,
-  loginCustomer,
-  logoutCustomer,
-  forgotPassword,
-  resetPassword,
-  customerAPI,
-};
-
-export default UnifiedLoginModalService;
+-- Decisions table
+CREATE TABLE decisions (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    application_id VARCHAR(20) NOT NULL,
+    offer_id BIGINT NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    email VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
+    FOREIGN KEY (offer_id) REFERENCES offers(id) ON DELETE CASCADE
+);
