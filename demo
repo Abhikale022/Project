@@ -1,22 +1,100 @@
--- Offers table
-CREATE TABLE offers (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    application_id VARCHAR(20) NOT NULL,
-    card_name VARCHAR(100) NOT NULL,
-    credit_limit DECIMAL(15,2) NOT NULL,
-    interest_rate DECIMAL(5,2) NOT NULL,
-    credit_score INT,
-    FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
-);
+package com.scb.creditcardorigination.customerLoginSignup.config;
 
--- Decisions table
-CREATE TABLE decisions (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    application_id VARCHAR(20) NOT NULL,
-    offer_id BIGINT NOT NULL,
-    status VARCHAR(20) NOT NULL,
-    email VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
-    FOREIGN KEY (offer_id) REFERENCES offers(id) ON DELETE CASCADE
-);
+import com.scb.creditcardorigination.customerLoginSignup.Service.CustomUserDetailsService;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+@Configuration
+public class SecurityConfig {
+    private final CustomUserDetailsService userDetailsService;
+    private final JwtRequestFilter jwtRequestFilter;
+
+    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtRequestFilter jwtRequestFilter) {
+        this.userDetailsService = userDetailsService;
+        this.jwtRequestFilter = jwtRequestFilter;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public DaoAuthenticationProvider authProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.csrf(csrf ->csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/customer/signup", "/customer/login","/customer/forgot-password","/customer/reset-password").permitAll()
+                    .anyRequest().authenticated()
+                )
+                .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+        http.authenticationProvider(authProvider());
+        http.cors(cors-> {});
+        return http.build();
+    }
+}
+package com.scb.creditcardorigination.salesUser.security;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration("salesUserSecurityConfig")
+public class SecurityConfig {
+    @Bean(name="salesUserFilterChain")
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(csrf->csrf.disable()) // 🔑 disable CSRF so POST/PUT/DELETE work in Postman
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/salesuser/login" ).permitAll()
+                        .anyRequest().permitAll() // allow all requests without auth
+                )
+                .formLogin(form->form.disable())
+                .httpBasic(basic->basic.disable());
+        return http.build();
+    }
+}
+package com.scb.creditcardorigination.TransactionProcessingSystem.security;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration("TransactionProcessingSystemSecurityConfig")
+public class SecurityConfig {
+    @Bean(name="TransactionProcessingSystemFilterChain")
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(csrf->csrf.disable()) // 🔑 disable CSRF so POST/PUT/DELETE work in Postman
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/transactions/create","/api/transactions/all","/api/transactions/{id}/timeline","/api/transactions/{id}").permitAll()
+                        .anyRequest().permitAll() // allow all requests without auth
+                )
+                .formLogin(form->form.disable())
+                .httpBasic(basic->basic.disable());
+        return http.build();
+    }
+}
