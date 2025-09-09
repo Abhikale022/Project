@@ -1,6 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import applynow1 from "../assets/applynow1.png";
+import guideIcon from "../assets/guide.png";
+import cardsIcon from "../assets/cards.png";
  
 const quickActions = [
   {
@@ -11,14 +13,14 @@ const quickActions = [
     iconClass: "quick-clipboard",
   },
   {
-    icon: {},
+    icon: guideIcon,
     title: "How to Apply",
     description: "Step-by-step guide to credit card applications",
     buttonText: "View Guide",
     iconClass: "quick-question",
   },
   {
-    icon: {},
+    icon: cardsIcon,
     title: "Types of Credit Cards",
     description: "Explore our complete range of credit cards",
     buttonText: "Compare Cards",
@@ -73,7 +75,14 @@ const QuickActionCard = ({
   return (
     <div className="card h-100 p-3 text-center temp-class">
       <div className={`quick-icon-bg ${iconClass}`}>
-        <i className={icon}></i>
+        {icon && (
+          <img
+            src={icon}
+            alt={title}
+            className="img-fluid"
+            style={{ width: "40px", height: "40px", objectFit: "contain" }}
+          />
+        )}
       </div>
       <h5 className="card-title">{title}</h5>
       <p className="card-text">{description}</p>
